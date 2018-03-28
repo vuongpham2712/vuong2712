@@ -1,2 +1,2 @@
-asdsadsada
 https://kenhlaptrinh.net/video-huong-dan-thiet-ke-website-ban-hang-su-dung-jsp-servlet-va-jdbc/
+http://viettuts.vn/java-jdbc/preparedstatement-trong-java
