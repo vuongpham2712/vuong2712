@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Deadline</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="main.css">
+  <script src="facturation.js"></script>
+  <script src="main.js"></script>
+</head>
+<body>
+	<div class="container">
+		<form action="https://google.com.vn" method="POST" ng-app="facturationApp" ng-controller="facturationCtrl">
+			<div class="row">
+				<div class="col-md-6">
+					<div class="title">
+						<h3>MODALITÉS DE PAIEMENT</h3>
+					</div>
+					<div>
+						<div class="form-group mode-depaienent">
+							<label for="mode">Mode de paiement</label>
+							<select ng-model="selectMode" ng-options="x.model for x in modes"></select>
+						</div>
+						<div class="form-group delai-depaiement">
+							<label for="delai">Délai de paiement</label>
+							<input type="text" ng-disabled="true">
+							<select ng-model="selectDate" ng-options="x for x in dates">
+							</select>
+							<p>you select {{selectMode.model+" "+selectMode.color+" "+ac+" "+selectDate}}</p>
+						</div>
+					</div>
+					<div class="form-group ristourne">
+						<label for=""></label>
+					</div>
+				</div>
+				<!-- end modalites de paiement -->
+				<div class="col-md-6"></div>
+				<!-- end  -->
+			</div>
+			<input type="submit" ng-disabled="true">
+		</form>
+	</div>
+</body>
+</html>
