@@ -9,33 +9,32 @@
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
   <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
-  <link rel="stylesheet" type="text/css" href="main.css">
+  <link rel="stylesheet" type="text/css" href="facturation.css">
   <script src="facturation.js"></script>
-  <script src="main.js"></script>
 </head>
 <body>
 	<div class="container">
-		<form action="https://google.com.vn" method="POST" ng-app="facturationApp" ng-controller="facturationCtrl">
+		<form action="https://google.com.vn" method="POST" ng-app="facturationApp">`
 			<div class="row">
 				<div class="col-md-6">
 					<div class="title">
 						<h3>MODALITÉS DE PAIEMENT</h3>
 					</div>
-					<div>
+					<div class="facturation-item" ng-controller="facturationCtrl">
 						<div class="form-group mode-depaienent">
 							<label for="mode">Mode de paiement</label>
-							<select ng-model="selectMode" ng-options="x.model for x in modes"></select>
+							<select ng-model="mode" ng-options="x.model for x in modes" ng-change="myFun()"></select>
 						</div>
 						<div class="form-group delai-depaiement">
 							<label for="delai">Délai de paiement</label>
-							<input type="text" ng-disabled="true">
-							<select ng-model="selectDate" ng-options="x for x in dates">
-							</select>
-							<p>you select {{selectMode.model+" "+selectMode.color+" "+ac+" "+selectDate}}</p>
+							<input type="text" ng-disabled="count" ng-model="ac">
+							<select ng-model="date" ng-options="x for x in dates" ng-disabled="count" ng-init="date=datesDefault"></select>
+							<p>you select {{mode.model+" "+mode.color+" "+ac+" "+date}}</p>
 						</div>
 					</div>
 					<div class="form-group ristourne">
-						<label for=""></label>
+						<label for="">Ristourne en cas de paiement anticipé</label>
+						<input type="checkbox">
 					</div>
 				</div>
 				<!-- end modalites de paiement -->
