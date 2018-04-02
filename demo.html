@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Deadline</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="facturation.css">
+  <script src="facturation.js"></script>
+</head>
+<body>
+	<div class="container">
+		<form action="http://5abb53f015c1650014086a5b.mockapi.io/api/provider/tab5/" method="POST" ng-app="facturationApp" ng-controller="facturationCtrl">
+			<div class="row">
+				<div class="col-md-6">
+					<div class="modalite">
+						<div class="modalite-heading">
+							<h4>MODALITÉS DE PAIEMENT</h4>
+						</div>
+						<!-- end modalite-heading-->
+						<div class="modalite-body">
+							<div class="paiement">
+								<div class="modede-paiement row">
+									<label for="" class="col-md-5">Mode de paiement</label>
+									<select class="col-md-7" ng-model="mode" ng-options="x for (x, y) in modes" ng-change="myFun()" name="typett">
+										
+									</select>
+								</div>
+								<!-- end modede-paiement -->
+								<div class="delaide-paiement row">
+									<label for="delai" class="col-md-5">Délai de paiement</label>
+									<input type="text" ng-disabled="count" ng-model="ac" class="col-md-3" name="timett">
+									<select ng-model="date1" ng-options="x for x in dates1" ng-disabled="count" ng-init="date1=datesDefault" class="col-md-3 col-md-offset-1" ></select>
+								</div>
+							</div>
+							<!-- end paiement -->
+							<div class="ristourne">
+								<div class="ristourne-body">
+									<div class="ristourne-item row">
+										<label for="" class="col-md-5">Ristourne en cas de paiement anticipé</label>
+										<div class="col-md-7 row">
+											<span class="col-md-3">Sans</span>
+											<label class="switch col-md-6">
+												<input type="checkbox" ng-model="cb">
+												<span class="slider round"></span>
+											</label>
+											<span class="col-md-3">Avec</span>
+										</div>
+									</div>
+									<!-- end ristourne-item -->
+									<div class="ristourne-hide" ng-hide="!cb">
+										<div class="anticipation row">
+											<label for="" class="col-md-5">Délai d’anticipation</label>
+											<input type="text" class="col-md-3" name="field1">
+											<select ng-model="date2" ng-options="x for x in dates2" ng-init="date2=datesDefault" class="col-md-3 col-md-offset-1" ng-disabled="true"></select>
+										</div>
+										<!-- end anticipation -->
+										<div class="valeur row">
+											<label for="" class="col-md-5">Valeur de la ristourne</label>
+											<input type="text" class="col-md-3" name="field2">
+											<select ng-model="ratio" ng-options="x for x in ratios" ng-init="ratio=ratiosDefault" class="col-md-3 col-md-offset-1" ng-disabled="true"></select>
+										</div>
+										<!-- end valeur -->
+									</div>
+									<!-- end ristoure-hide -->
+								</div>
+								<!-- end ristourne-body -->
+							</div>
+							<!-- end ristourne -->
+						</div>
+						<!-- end modalite-body -->
+					</div>
+					<!-- end modalite -->
+				</div>
+				<div class="col-md-6">
+					<div class="compte">
+						<div class="compte-heading">
+							<h4>COMPTE DÉBITEUR</h4>
+						</div>
+						<!-- end cmpte-headind -->
+						<div class="compte-body">
+							<div class="contract-multi row">
+								<label for="" class="col-md-5">Contrat multi-débiteur</label>
+								<div class="col-md-7 row">
+									<span class="col-md-3">Non</span>
+									<label class="switch col-md-6">
+										<input type="checkbox" ng-model="cb">
+										<span class="slider round"></span>
+									</label>
+									<span class="col-md-3">Oui</span>
+								</div>
+							</div>
+							<div class="iban row">
+								<label for="" class="col-md-5">IBAN</label>
+								<input type="text" class="col-md-7">
+							</div>
+						</div>
+						<!-- end compte-body -->
+					</div>	
+					<!-- end compte -->
+				</div>
+			</div> 
+			<input type="submit" class="btn btn-primary">
+		</form>
+		<!-- end form facturation -->
+	</div>
+</body>
+</html>
