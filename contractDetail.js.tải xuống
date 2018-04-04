@@ -1,0 +1,1934 @@
+myApp.controller('contractDetailController', ['$scope', '$sce', '$http', '$timeout', '$filter', '$window', '$compile','$interval', function ($scope, $sce, $http, $timeout, $filter, $window, $compile,$interval) {
+
+    $scope.loading = true;
+    $scope.contract = {
+    };
+    $scope.meter = [];
+
+    $scope.typeFluide = '';
+    var searchTypeFluide = window.location.search.match(/typeFluide=([a-z]|_)+/i);
+    if (searchTypeFluide != null) {
+            $scope.typeFluide = searchTypeFluide[0].replace('typeFluide=', '');
+    }
+    $scope.getTitleCreateContract = function(){
+        if (searchTypeFluide != null) {
+            if($scope.contract['contract_purchase.contract_reference'] != undefined){
+                $('#rightside_title').html(top_navigation_title['contract'] + ' ' + $scope.contract['contract_purchase.contract_reference']);
+            }else{
+                $('#rightside_title').html(top_navigation_title['new_contract'] + ' ' + top_navigation_title[$scope.typeFluide]);
+            }
+            $scope.searchProviderByFluid();
+        }
+    }
+
+    $scope.contract['contract_purchase.fluid'] = $scope.typeFluide;
+    $scope.contract['contract_purchase.state'] = "incomplete";
+    var searchTypeContrat = window.location.search.match(/typeContrat=([a-z]|_)+/i);
+    if (searchTypeContrat != null) {
+        $scope.contract['contract_purchase.contract_type'] = searchTypeContrat[0].replace('typeContrat=', '');
+    }
+
+    // for step(or tab) switch, init = 1 (tab general infor)
+    $scope.currentStep = 1;
+
+    $scope.enableTab5 = function(){
+        if($scope.currentStep == 4){
+            $scope.listTabAccess['tab5'] = true;
+        }
+    }
+    var checkGetTriggerForTab3 = true;
+    $scope.goNextStep = function () {
+        if ($scope.currentStep >= 5) {
+            $scope.currentStep = 5;
+        } else {
+            $scope.currentStep++;
+        }
+        if($scope.currentStep == 3 && checkGetTriggerForTab3){
+            $scope.getStateTab3();
+            checkGetTriggerForTab3 = false;
+        }
+        $scope.enableTab5();
+        if($scope.currentStep == 2){
+            $scope.pushContractReferenceAndFluideToSesson();
+        }
+
+        // $('#rightside_title').html(top_navigation_title['contract'] + ' ' + $scope.contract['contract_purchase.contract_reference']);
+    };
+
+    $scope.goPreviousStep = function () {
+        if ($scope.currentStep <= 1) {
+            $scope.currentStep = 1;
+        } else {
+            $scope.currentStep--;
+        }
+
+        // if($scope.currentStep == 2){
+        //     $scope.pushContractReferenceAndFluideToSesson();
+        // }
+    };
+
+    // var promise = $interval(function () {
+    //     if($scope.listMeterSelectedToDisplay != undefined && $scope.listMeterSelectedToDisplay.length > 0){
+    //         $scope.listTabAccess['tab3'] = true;
+    //         // $interval.cancel(promise);
+    //     }else{
+    //         $scope.listTabAccess['tab3'] = false;
+    //     }
+    // });
+
+    $scope.checkTypeCheckBoxOption = function ($event) {
+        var check = $($event.currentTarget).attr("name-checkbox");
+        if (check == 'distribution') {
+            if ($scope.contract['contract_purchase.option5'] == true) {
+                $("#collapseDISTRIBUTION input[type=radio]").attr('disabled', false);
+                $("#collapseDISTRIBUTION input.style-radio-option + i").css("cursor", 'pointer');
+                $("#collapseDISTRIBUTION input[type=text].not-radio-text").attr('readonly', false);
+                $("#collapseDISTRIBUTION input[type=text].not-radio-text").css({"border": "", "background": ""});
+                $scope.setDefaultRadio();
+            } else {
+                $("#collapseDISTRIBUTION input[type=radio]").attr('disabled', true);
+                $("#collapseDISTRIBUTION input[type=radio]").prop("checked", false);
+                $("#collapseDISTRIBUTION input.style-radio-option + i").css("cursor", 'not-allowed');
+                $("#collapseDISTRIBUTION input[type=text]").hide();
+                $(".option-for-tct").hide();
+                // $( "#collapseDISTRIBUTION input[type=text]").attr('readonly', true);
+
+            }
+        }
+    }
+
+    $scope.$watch(function (scope) {
+        $( "#collapseOne input[type=text]").attr('readonly', false);
+        $( "#collapseOne input[type=text]" ).css({"border":"","background":""});
+        if(scope.contract['contract_purchase.option1'] == true){
+            $("#collapseOne input[type=radio]").attr('disabled', false);
+            $( "#collapseOne input.style-radio-option + i" ).css( "cursor", 'pointer' );
+            $( "#collapseOne input[type=text].not-radio-text").attr('readonly', false);
+            $( "#collapseOne input[type=text].not-radio-text" ).css({"border":"","background":""});
+        }else{
+            $("#collapseOne input[type=radio]").attr('disabled', true);
+            $( "#collapseOne input[type=radio]" ).prop( "checked", false );
+            $( "#collapseOne input.style-radio-option + i" ).css( "cursor", 'not-allowed' );
+            $( "#collapseOne input[type=text]" ).css({"border":"1px solid rgb(217, 217, 217)","background":"rgb(242, 242, 242)"});
+            $( "#collapseOne input[type=text]").attr('readonly', true);
+        }
+
+        if(scope.contract['contract_purchase.option2'] == true){
+            $("#collapseTwo input[type=radio]").attr('disabled', false);
+            $( "#collapseTwo input.style-radio-option + i" ).css( "cursor", 'pointer' );
+            $( "#collapseTwo input[type=text].not-radio-text").attr('readonly', false);
+            $( "#collapseTwo input[type=text].not-radio-text" ).css({"border":"","background":""});
+        }else{
+            $("#collapseTwo input[type=radio]").attr('disabled', true);
+            $( "#collapseTwo input[type=radio]" ).prop( "checked", false );
+            $( "#collapseTwo input.style-radio-option + i" ).css( "cursor", 'not-allowed' );
+            $( "#collapseTwo input[type=text]" ).css({"border":"1px solid rgb(217, 217, 217)","background":"rgb(242, 242, 242)"});
+            $( "#collapseTwo input[type=text]").attr('readonly', true);
+        }
+
+        if(scope.contract['contract_purchase.option3'] == true){
+            $("#collapseThree input[type=radio]").attr('disabled', false);
+            $( "#collapseThree input.style-radio-option + i" ).css( "cursor", 'pointer' );
+            $( "#collapseThree input[type=text].not-radio-text").attr('readonly', false);
+            $( "#collapseThree input[type=text].not-radio-text" ).css({"border":"","background":""});
+        }else{
+            $("#collapseThree input[type=radio]").attr('disabled', true);
+            $( "#collapseThree input[type=radio]" ).prop( "checked", false );
+            $( "#collapseThree input.style-radio-option + i" ).css( "cursor", 'not-allowed' );
+            $( "#collapseThree input[type=text]" ).css({"border":"1px solid rgb(217, 217, 217)","background":"rgb(242, 242, 242)"});
+            $( "#collapseThree input[type=text]").attr('readonly', true);
+        }
+
+
+        if(scope.contract['contract_purchase.option4'] == true){
+            $("#collapseFour input[type=radio]").attr('disabled', false);
+            $( "#collapseFour input.style-radio-option + i" ).css( "cursor", 'pointer' );
+            $( "#collapseFour input[type=text].not-radio-text").attr('readonly', false);
+            $( "#collapseFour input[type=text].not-radio-text" ).css({"border":"","background":""});
+        }else{
+            $("#collapseFour input[type=radio]").attr('disabled', true);
+            $( "#collapseFour input[type=radio]" ).prop( "checked", false );
+            $( "#collapseFour input.style-radio-option + i" ).css( "cursor", 'not-allowed' );
+            $( "#collapseFour input[type=text]" ).css({"border":"1px solid rgb(217, 217, 217)","background":"rgb(242, 242, 242)"});
+            $( "#collapseFour input[type=text]").attr('readonly', true);
+        }
+        if(scope.contract['contract_purchase.option5'] == true){
+            $("#collapseDISTRIBUTION input[type=radio]").attr('disabled', false);
+            $( "#collapseDISTRIBUTION input.style-radio-option + i" ).css( "cursor", 'pointer' );
+            $( "#collapseDISTRIBUTION input[type=text].not-radio-text").attr('readonly', false);
+            $( "#collapseDISTRIBUTION input[type=text].not-radio-text" ).css({"border":"","background":""});
+        }else{
+            $("#collapseDISTRIBUTION input[type=radio]").attr('disabled', true);
+            $( "#collapseDISTRIBUTION input[type=radio]" ).prop( "checked", false );
+            $( "#collapseDISTRIBUTION input.style-radio-option + i" ).css( "cursor", 'not-allowed' );
+            $( "#collapseDISTRIBUTION input[type=text]" ).hide();
+            $(".option-for-tct").hide();
+            // $( "#collapseDISTRIBUTION input[type=text]").attr('readonly', true);
+
+        }
+        if(scope.contract['contract_purchase.option6'] == true){
+            $("#collapseStockage input[type=radio]").attr('disabled', false);
+            $( "#collapseStockage input.style-radio-option + i" ).css( "cursor", 'pointer' );
+            $( "#collapseStockage input[type=text].not-radio-text").attr('readonly', false);
+            $( "#collapseStockage input[type=text].not-radio-text" ).css({"border":"","background":""});
+        }else{
+            $("#collapseStockage input[type=radio]").attr('disabled', true);
+            $( "#collapseStockage input[type=radio]" ).prop( "checked", false );
+            $( "#collapseStockage input.style-radio-option + i" ).css( "cursor", 'not-allowed' );
+            $( "#collapseStockage input[type=text]" ).css({"border":"1px solid rgb(217, 217, 217)","background":"rgb(242, 242, 242)"});
+            $( "#collapseStockage input[type=text]").attr('readonly', true);
+        }
+
+    });
+
+    $scope.clickRadioOptionStep4 = function ($event) {
+        if($event.currentTarget.checked == true){
+            var nameRadio = $($event.currentTarget).attr("name");
+            var list= $(".style-radio-option");
+            for(var i=0; i<list.length; i++){
+                if($(list[i]).attr("name") == nameRadio){
+                    $(list[i]).parent().parent().parent().find(".input-text").attr('readonly',true);
+                    $(list[i]).parent().parent().parent().find(".input-text").css('background','rgb(242, 242, 242)');
+                }
+
+            }
+
+            $($event.currentTarget).parent().parent().parent().find(".input-text").attr('readonly', false);
+            $($event.currentTarget).parent().parent().parent().find(".input-text").css('background', 'white');
+        } else {
+            $($event.currentTarget).parent().parent().parent().find(".input-text").attr('readonly', true);
+            $($event.currentTarget).parent().parent().parent().find(".input-text").css('background', 'rgb(242, 242, 242)');
+
+        }
+    }
+    $scope.clickRadioForDistribution = function ($event) {
+        if($($event.currentTarget).attr("name-radio") == 'revisable'){
+            $($event.currentTarget).parent().parent().parent().parent().parent().parent().find(".input-text").hide();
+
+        }else {
+            $($event.currentTarget).parent().parent().parent().parent().parent().parent().find(".input-text").show();
+
+        }
+    }
+    $scope.clickRadioTCT = function ($event) {
+        if($($event.currentTarget).attr("name-radio") == 'revisable'){
+            $($event.currentTarget).parent().parent().parent().parent().parent().parent().find(".option-for-tct").hide();
+
+        }else {
+            $($event.currentTarget).parent().parent().parent().parent().parent().parent().find(".option-for-tct").show();
+            $(".option-for-tct").find(".input-text").show();
+        }
+    }
+    $scope.clickRadioStockage = function ($event) {
+
+        if ($event.currentTarget.checked == true) {
+            var nameRadio = $($event.currentTarget).attr("name");
+            var list = $(".style-radio-option");
+            for (var i = 0; i < list.length; i++) {
+                if ($(list[i]).attr("name") == nameRadio) {
+                    $(list[i]).parent().parent().parent().parent().parent().find(".input-text").attr('readonly', true);
+                    $(list[i]).parent().parent().parent().parent().parent().find(".input-text").css('background', 'rgb(242, 242, 242)');
+                }
+
+            }
+
+            $($event.currentTarget).parent().parent().parent().parent().parent().find(".input-text").attr('readonly', false);
+            $($event.currentTarget).parent().parent().parent().parent().parent().find(".input-text").css('background', 'white');
+        } else {
+            $($event.currentTarget).parent().parent().parent().parent().parent().find(".input-text").attr('readonly', true);
+            $($event.currentTarget).parent().parent().parent().parent().parent().find(".input-text").css('background', 'rgb(242, 242, 242)');
+
+        }
+    }
+
+    /* begin model option select */
+    $scope.providerByFluide = {};
+    $scope.listProviderCode = [];
+
+    $scope.legalEntity = {};
+    $scope.listLegalEntityCode = [];
+
+    $scope.regionalDirectorate = {};
+    $scope.listRegionalDirectorateCode = [];
+
+    $scope.sector = {};
+    $scope.listSectorCode = [];
+    $scope.checkClickFluide = false;
+    $scope.loadingTableMeterSelected = false;
+    /* end model option select */
+    $scope.listTabAccess = [];
+
+    $scope.listMeterSelectedToDisplay =[];
+
+    $scope.getPoitDeLivraisonForMeter = function(){
+        if($scope.listMeterSelectedToDisplay != undefined && $scope.listMeterSelectedToDisplay.length > 0){
+            for(var i= 0 ; i < $scope.listMeterSelectedToDisplay.length - 1; i++ ){
+                $scope.meter.push($scope.listMeterSelectedToDisplay[i].delivery_point);
+            }
+        }
+    }
+
+    $scope.contract_lot = [];
+    $scope.pushListTabAccessToSession = function(){
+        var listTabAccess = JSON.stringify($scope.listTabAccess);
+        var dataContract = JSON.stringify($scope.contract);
+        var dataProvider = JSON.stringify($scope.valuesByProvider);
+        var dataMeterSelected = JSON.stringify($scope.listMeterSelectedToDisplay);
+        var dataPrixTab3PushSession = JSON.stringify($scope.dataPrixTab3);
+        var contract_lot = JSON.stringify($scope.contract_lot);
+        $http({
+            method: "POST",
+            url: "pushListTabAccessToSession.action",
+            params: {
+                'listTabAccess'           : listTabAccess,
+                'dataContract'            : dataContract,
+                'dataProvider'            : dataProvider,
+                'dataMeterSelected'       : dataMeterSelected,
+                'dataPrixTab3PushSession' : dataPrixTab3PushSession,
+                'contract_lot'            : contract_lot
+            }
+        }).then(function mySuccess(response) {
+
+        });
+    }
+
+    $scope.dataPrixTab3 = {};
+    var ischeckGetStateTab3 = true;
+    $scope.getStateTab3 = function(){
+        if($scope.dataPrixTab3 != null && $scope.dataPrixTab3 != '' && ischeckGetStateTab3){
+            var typePrixTab =  $scope.dataPrixTab3['prixType'];
+            $timeout(function () {
+                angular.element("#"+typePrixTab).triggerHandler('click');
+            });
+            ischeckGetStateTab3 = false;
+            $scope.loadingTabContract = false;
+        }
+    }
+
+    $scope.saveContract = function () {
+        // merge first_name & name into name
+        var valuesByProvider_copy = angular.copy($scope.valuesByProvider[$scope.contract['contract_purchase.provider']]);
+        valuesByProvider_copy['provider.commercial_contact_name'] =
+            valuesByProvider_copy['provider.commercial_contact_first_name'] + ' ' + valuesByProvider_copy['provider.commercial_contact_name'];
+        valuesByProvider_copy['provider.invoicing_contact_name'] =
+            valuesByProvider_copy['provider.invoicing_contact_first_name'] + ' ' + valuesByProvider_copy['provider.invoicing_contact_name'];
+
+        // state is 'complete' or 'incomplete' dependent on all fields filled or not
+        // at the moment (step 1): 'incomplete'
+        $scope.contract['contract_purchase.state'] = 'incomplete';
+        $scope.dataPrixTab3 = {} ;
+        if($scope.prixType != ""){
+            if($scope.prixType == "price-fixed" && $scope.contract["contract_purchase.index_type"] != "" && $scope.contract["contract_purchase.index_type"] != undefined){
+                $scope.dataPrixTab3['prixType'] = $scope.prixType;
+                $scope.dataPrixTab3['indexType'] = $scope.contract["contract_purchase.index_type"];
+                $scope.dataPrixTab3['supplierSubscription'] = $scope.contract['contract_purchase.supplier_subscription'];
+            }else if($scope.prixType == "price-index-TRV"
+                && ($scope.contract['contract_purchase.supplier_subscription'] != "" && $scope.contract['contract_purchase.supplier_subscription'] != undefined)
+                && ($scope.contract['contract_purchase.molecule'] != "" && $scope.contract['contract_purchase.molecule'] != undefined)){
+                $scope.dataPrixTab3['prixType'] = $scope.prixType;
+                $scope.dataPrixTab3['supplierSubscription'] = $scope.contract['contract_purchase.supplier_subscription'];
+                $scope.dataPrixTab3['molecule'] = $scope.contract['contract_purchase.molecule'];
+                $scope.dataPrixTab3['supplierDiscountMolecule'] = $scope.contract['contract_purchase.supplier_discount_molecule'];
+                $scope.dataPrixTab3['supplierDiscountSubscription'] = $scope.contract['contract_purchase.supplier_discount_subscription'];
+
+            }else if($scope.prixType == "price-index-non-TRV"
+                && $scope.contract["contract_purchase.index_type"] != ""  && $scope.contract["contract_purchase.index_type"] != undefined
+                && $scope.contract['contract_purchase.surcout_supplier'] != "" && $scope.contract['contract_purchase.surcout_supplier'] != undefined){
+                $scope.dataPrixTab3['prixType'] = $scope.prixType;
+                $scope.dataPrixTab3['indexType'] = $scope.contract["contract_purchase.index_type"];
+                $scope.dataPrixTab3['supplierSubscription']  =  $scope.contract['contract_purchase.supplier_subscription'];
+                $scope.dataPrixTab3['surcoutSupplier']  = $scope.contract['contract_purchase.surcout_supplier'];
+            }
+        }
+        $scope.getPoitDeLivraisonForMeter();
+        var data = {
+            'contract': $scope.contract,
+            'provider': valuesByProvider_copy,
+            'meter'   : $scope.meter
+        };
+        $.ajax({
+            url: 'saveContract',
+            type: "POST",
+            data: {
+                'contractObj': JSON.stringify(data)
+            },
+            success: function (response) {
+                if(response == "SUCCESS"){
+                    console.log("update success!");
+                    // change label top left
+                    $('#rightside_title').html(top_navigation_title['contract'] + ' ' + $scope.contract['contract_purchase.contract_reference']);
+                    $scope.pushListTabAccessToSession();
+                } else if (response == "DUPLICATE CONTRAT REFERNCE") {
+                    console.log("DUPLICATE");
+                }
+            },
+            error: function (data) {
+
+            }
+        });
+    };
+
+    $scope.valuesByProvider = {};
+    $scope.searchProviderByFluid = function () {
+        $http({
+            method: "GET",
+            url: "searchProviderByFluid.action?fluid=" + $scope.typeFluide
+        }).then(function mySuccess(response) {
+            if(response.data != 'ERROR' && response.data != "" ) {
+                var data = JSON.parse(response.data);
+                angular.forEach(data, function (value, key) {
+                    $scope.providerByFluide[value.code] = value.name;
+
+                    var commercial_name = '';
+                    var commercial_first_name = '';
+                    if (!(typeof value['provider.commercial_contact_name'] === 'undefined')) {
+                        if (value['provider.commercial_contact_name'].split(' ').length === 1) {
+                            commercial_name = value['provider.commercial_contact_name'].split(' ')[0];
+                        } else {
+                            commercial_name = value['provider.commercial_contact_name'].split(' ')[1];
+                            commercial_first_name = value['provider.commercial_contact_name'].split(' ')[0];
+                        }
+                    }
+
+                    var invoicing_name = '';
+                    var invoicing_first_name = '';
+                    if (!(typeof value['provider.invoicing_contact_name'] === 'undefined')) {
+                        if (value['provider.invoicing_contact_name'].split(' ').length === 1) {
+                            invoicing_name = value['provider.invoicing_contact_name'].split(' ')[0];
+                        } else {
+                            invoicing_name = value['provider.invoicing_contact_name'].split(' ')[1];
+                            invoicing_first_name = value['provider.invoicing_contact_name'].split(' ')[0];
+                        }
+                    }
+
+                    $scope.valuesByProvider[value.code] = {
+                        'provider.commercial_contact_name': commercial_name,
+                        'provider.commercial_contact_first_name': commercial_first_name,
+                        'provider.commercial_contact_phone': value['provider.commercial_contact_phone'],
+                        'provider.commercial_contact_email': value['provider.commercial_contact_email'],
+
+                        'provider.invoicing_contact_name': invoicing_name,
+                        'provider.invoicing_contact_first_name': invoicing_first_name,
+                        'provider.invoicing_contact_phone': value['provider.invoicing_contact_phone'],
+                        'provider.invoicing_contact_email': value['provider.invoicing_contact_email'],
+
+                        'code': value['code'],
+                        'name': value['name'],
+                        'provider.fluid': value['provider.fluid']
+                    }
+                });
+                $scope.listProviderCode = Object.keys($scope.providerByFluide);
+            }
+            $scope.loading = false;
+        }, function myError(response) {
+            $scope.providerByFluide = {};
+            $scope.loading = false;
+        });
+    };
+
+    /* start point de levraison contrat*/
+    $scope.totalMeter = 1;
+    $scope.listKeyField = ["delivery_point","elec_pricing", "elec_cat", "site_city", "code", "name", "site_code", "site_name", "site_construction_code"];
+    $scope.listFieldModal = ["delivery_point","elec_pricing","code","name","site_code","site_name","site_city","site_construction_code","elec_cat"];
+    $scope.listFieldTable = listFieldMeter;
+    var currentIndex = 0;
+    $scope.dataConvertForAnalyses = [];
+
+
+    $scope.coutMeterSelected = 0;
+    $scope.checkCoutMeterSelectedShowText = 0 ;
+
+    $scope.listMeter = [];
+    $scope.hideLoadMoreDataTable = function () {
+        if (!$(".row-loader").hasClass('show-loader')) {
+            $(".row-loader").addClass('show-loader');
+        }
+    }
+    $scope.showLoadMoreDataTable = function () {
+        if ($(".row-loader").hasClass('show-loader')) {
+            $(".row-loader").removeClass('show-loader');
+        }
+    }
+
+
+    $scope.selectedAllMeterSelected = function($event){
+        if($event.currentTarget.checked == true){
+            for(var i = 0; i<= $scope.listMeterSelectedToDisplay.length - 1; i++){
+                $scope.listMeterSelectedToDisplay[i].selected = true;
+            }
+        }else{
+            for(var i = 0; i<=$scope.listMeterSelectedToDisplay.length - 1; i++){
+                $scope.listMeterSelectedToDisplay[i].selected = false;
+            }
+        }
+        $scope.enableButtomRemove();
+    }
+    $scope.selectedAllMeterSelectedModal = function($event){
+        if($event.currentTarget.checked == true && $scope.listMeterToDisplay.length > 0){
+            $scope.checkClickFluide =true;
+            for(var i = 0; i<= $scope.listMeterToDisplay.length - 1; i++){
+                $scope.listMeterToDisplay[i].selected = true;
+            }
+        }else{
+            $scope.checkClickFluide = false;
+            for(var i = 0; i<=$scope.listMeterToDisplay.length - 1; i++){
+                $scope.listMeterToDisplay[i].selected = false;
+            }
+        }
+    }
+
+    $scope.getSelectedListMeterOriginal = function(){
+        var countMeterSelected = 0;
+        angular.forEach($scope.listMeterSelectedToDisplay,function(objectMeter){
+            if(objectMeter.selected == true){
+                countMeterSelected += 1;
+            }
+        });
+        if(countMeterSelected == $scope.listMeterSelectedToDisplay.length){
+            $('#checkbox-all-meter')[0].checked = true;
+        }
+    }
+    $scope.getSelectedListMeterOriginalModal = function(){
+        var countMeterSelected = 0;
+        angular.forEach($scope.listMeterToDisplay,function(objectMeter){
+            if(objectMeter.selected == true){
+                countMeterSelected += 1;
+            }
+
+        });
+        if(countMeterSelected > 0){
+            $scope.checkClickFluide = true;
+        }else{
+            $scope.checkClickFluide = false;
+        }
+        if(countMeterSelected == $scope.listMeterToDisplay.length){
+            $('#checkbox-all-meter-modal')[0].checked = true;
+        }
+    }
+
+
+    $scope.showModalDialogRemoveMeter = function(){
+        angular.element('#modal-dialog-remove-meter').appendTo("body").modal({
+            keyboard: false,
+            backdrop: 'static',
+            show: true
+        });
+        $('#modal-dialog-remove-meter').modal().show();
+        $('.modal-backdrop').css('display','block');
+        // $('#modal-analyses-meter').modal().show();
+    }
+
+    $scope.isCheckShowButtomRemove = false;
+    $scope.enableButtomRemove = function(){
+        var countMeterSelected = 0;
+        angular.forEach($scope.listMeterSelectedToDisplay,function(objectMeter){
+            if(objectMeter.selected == true){
+                objectMeter.selected = true;
+                countMeterSelected += 1;
+            }
+        });
+        if(countMeterSelected > 0){
+            $scope.isCheckShowButtomRemove = true;
+        }else{
+            $scope.isCheckShowButtomRemove = false;
+        }
+    }
+    $scope.selectedSingleMeterSelected = function($event){
+        var idMeter = $event.currentTarget.id;
+        if($event.currentTarget.checked === true){
+            angular.forEach($scope.listMeterSelectedToDisplay,function(objectMeter){
+                if(idMeter == objectMeter.code){
+                    objectMeter.selected = true;
+                }
+            });
+        }else{
+            angular.forEach($scope.listMeterSelectedToDisplay,function(objectMeter){
+                if(idMeter === objectMeter.code){
+                    objectMeter.selected = false;
+                }
+            });
+            $('#checkbox-all-meter')[0].checked = false;
+        }
+        $scope.enableButtomRemove();
+        $scope.getSelectedListMeterOriginal();
+    }
+    $scope.selectedSingleMeterSelectedModal = function($event){
+        var idMeter = $event.currentTarget.id;
+        if($event.currentTarget.checked == true){
+            angular.forEach($scope.listMeterToDisplay,function(objectMeter){
+                if(idMeter == objectMeter.code){
+                    objectMeter.selected = true;
+                }
+            });
+        }else{
+            angular.forEach($scope.listMeterToDisplay,function(objectMeter){
+                if(idMeter == objectMeter.code){
+                    objectMeter.selected = false;
+                }
+            });
+            $('#checkbox-all-meter-modal')[0].checked = false;
+        }
+        $scope.getSelectedListMeterOriginalModal();
+    }
+    $scope.fixFirstColumn = function(pxScrollLeft){
+        // $('.table-content-wapper-for-meter').scroll(function(e) { //detect a scroll event on the tbody
+        /*
+      Setting the thead left value to the negative valule of tbody.scrollLeft will make it track the movement
+      of the tbody element. Setting an elements left value to that of the tbody.scrollLeft left makes it maintain           it's relative position at the left of the table.
+      */
+        $('.header-content-wapper-for-meter').css("left", pxScrollLeft); //fix the thead relative to the body scrolling
+        $('.header-content-wapper-for-meter th:nth-child(1)').css("left", - pxScrollLeft); //fix the first cell of the header
+        $('.table-content-wapper-for-meter td:nth-child(1)').css("left", - pxScrollLeft); //fix the first column of tdbody
+        // });
+    }
+    $scope.fixFirstColumnForModal = function(pxScrollLeft){
+        // $('.table-content-wapper-for-meter').scroll(function(e) { //detect a scroll event on the tbody
+        /*
+      Setting the thead left value to the negative valule of tbody.scrollLeft will make it track the movement
+      of the tbody element. Setting an elements left value to that of the tbody.scrollLeft left makes it maintain           it's relative position at the left of the table.
+      */
+        $('.header-content-wapper-for-meter-modal').css("left", pxScrollLeft); //fix the thead relative to the body scrolling
+        $('.header-content-wapper-for-meter-modal th:nth-child(1)').css("left", - pxScrollLeft); //fix the first cell of the header
+        $('.table-content-wapper-for-meter-modal td:nth-child(1)').css("left", - pxScrollLeft); //fix the first column of tdbody
+        // });
+    }
+    $scope.createScrollTableContentForMetter = function () {
+
+        $('.table-content-wapper-for-meter').mCustomScrollbar({
+            axis: "yx",
+            theme: "dark",
+            // mouseWheel: {
+            //     scrollAmount: 10000
+            // },
+            // scrollInertia: 500,
+            callbacks: {
+                whileScrolling: function () {
+                    if (this.mcs.direction == 'x') {
+                        $scope.fixFirstColumn(this.mcs.left);
+                        // khi cuộn ngang, dịch fake-header theo header thật
+                        // $('#fake-table-wrapper').css('left', this.mcs.left);
+                    }
+
+                    if (this.mcs.direction == 'y') {
+                        $scope.fixFirstColumn(this.mcs.left);
+                        // khi cuộn ngang, dịch fake-header theo header thật
+                        // $('#fake-table-wrapper').css('left', this.mcs.left);
+                    }
+
+                }
+            }
+
+        });
+        // $('.table-content-wapper-for-meter').animate({scrollLeft: 0}, 0);
+        // $timeout(function () {
+        //     $scope.setHeightFisrtColumnTableMeterSelected();
+        // });
+    };
+
+    $scope.createScrollTableContentForMetterModal = function () {
+
+        $('.table-content-wapper-for-meter-modal').mCustomScrollbar({
+            axis: "xy",
+            theme: "3d-dark",
+            callbacks: {
+                whileScrolling: function () {
+                    if (this.mcs.direction == 'x') {
+                        $('.header-content-wapper-for-meter-modal').css("left", this.mcs.left);
+                    }
+
+                    if (this.mcs.direction == 'y') {
+                        $('.header-content-wapper-for-meter-modal').css("left", this.mcs.left);
+                    }
+
+                }
+            }
+        });
+    };
+    $scope.createScrollTableContentForMeterModalThead = function (control) {
+
+        $(control).mCustomScrollbar({
+            axis: "xy",
+            theme: "3d-dark",
+            callbacks: {
+                whileScrolling: function () {
+
+                }
+            }
+        });
+    };
+    $scope.createScrollForStepOption4 = function (control) {
+
+        $(control).mCustomScrollbar({
+            axis: "y",
+            theme: "3d-dark",
+            callbacks: {
+                whileScrolling: function () {
+
+                }
+            }
+        });
+    };
+
+    $scope.$watch(function(scope) {
+        if(scope.currentStep == 4){
+            scope.createScrollForStepOption4('.options-wrapper-step-4');
+        }
+
+        if($scope.listMeterSelectedToDisplay != undefined && $scope.listMeterSelectedToDisplay.length > 0){
+            $scope.listTabAccess['tab3'] = true;
+            // $interval.cancel(promise);
+        }else{
+            $scope.listTabAccess['tab3'] = false;
+        }
+    });
+
+    $scope.sortNameMeterSelected ='';
+    $scope.sortTypeMeterSelected = null;
+    $scope.sortNameMeterSelectedModal = '';
+    $scope.sortTypeMeterSelectedModal = null;
+    $scope.sortByZAMeterSelected = function (sortName) {
+        if (sortName !== null) {
+            $scope.sortNameMeterSelected = sortName;
+            if($scope.sortTypeMeterSelected == true){
+                $scope.sortTypeMeterSelected = null;
+            }else{
+                $scope.sortTypeMeterSelected = true;
+                $scope.listMeterSelectedToDisplay = orderBy( $scope.listMeterSelectedToDisplay, "-" + $scope.sortNameMeterSelected);
+            }
+
+        }
+    };
+    $scope.sortByAZMeterSelected = function (sortName) {
+        if (sortName !== null) {
+            $scope.sortNameMeterSelected = sortName;
+            if($scope.sortTypeMeterSelected == false){
+                $scope.sortTypeMeterSelected = null;
+            }else{
+                $scope.sortTypeMeterSelected = false;
+                $scope.listMeterSelectedToDisplay = orderBy($scope.listMeterSelectedToDisplay, $scope.sortNameMeterSelected);
+            }
+
+        }
+    };
+
+    $scope.sortByZAMeterSelectedModal = function (sortName) {
+        if (sortName !== null) {
+            $scope.sortNameMeterSelectedModal = sortName;
+            if($scope.sortTypeMeterSelectedModal == true){
+                $scope.sortTypeMeterSelectedModal = null;
+            }else{
+                $scope.sortTypeMeterSelectedModal = true;
+                $scope.listMeterToDisplay = orderBy( $scope.listMeterToDisplay, "-" + $scope.sortNameMeterSelectedModal);
+            }
+
+        }
+    };
+    $scope.sortByAZMeterSelectedModal = function (sortName) {
+        if (sortName !== null) {
+            $scope.sortNameMeterSelectedModal = sortName;
+            if($scope.sortTypeMeterSelectedModal == false){
+                $scope.sortTypeMeterSelectedModal = null;
+            }else{
+                $scope.sortTypeMeterSelectedModal = false;
+                $scope.listMeterToDisplay = orderBy($scope.listMeterToDisplay, $scope.sortNameMeterSelectedModal);
+            }
+
+        }
+    };
+    $scope.getCountMeterSelected = function(){
+        $scope.coutMeterSelected = $('.row-content-meter-for-meter-selected').length;
+    }
+
+    $scope.setHeightFisrtColumnTableMeterSelected = function(){
+        var fisrtColumnTableMeterSelected =  $('.text-content-meter-checkbox');
+        for(var i = 0 ; i < fisrtColumnTableMeterSelected.length ; i++){
+            $(fisrtColumnTableMeterSelected[i]).height($(fisrtColumnTableMeterSelected[i]).parent().height())
+        }
+
+    }
+
+    $scope.showAndHideTableMeterSelected = function(){
+        $scope.loadingShowTableMeter  = true;
+        setTimeout(function () {
+            $scope.loadingShowTableMeter  = false;
+            $scope.$apply();
+        },2000);
+    }
+
+    $scope.destroyCustomScrollBar = function(control) {
+        try{
+            if($(control).length>0){
+                $(control).mCustomScrollbar("destroy");
+            }
+        }catch (e){
+
+        }
+
+    }
+    $scope.showPopupAddColumn001 = function () {
+        $scope.loadingShowModal = true;
+        angular.element('#modal-analyses-meter').appendTo("body").modal({
+            keyboard: false,
+            backdrop: 'static',
+            show: true
+        });
+        $('#modal-analyses-meter').modal().show();
+        if ($scope.listMeter.length > 0) {
+            var heightBody = $('.modal-analyses-child').height() - 60;
+            $(".table-content-wapper-for-meter-modal").css('height', heightBody + 'px');
+            $scope.loadingShowModal = true;
+            $timeout(function () {
+                $scope.loadingShowModal = false;
+            }, 1000);
+        } else {
+            $scope.getFreeMeterForGazPurchaseContract();
+        }
+
+    }
+
+    $scope.listMeterToDisplay=[];
+
+    $scope.convertDataPurchaseContract = function(data,typeFluide){
+        var listMeterConvert = [];
+        if(typeFluide == 'ELEC') {
+            $scope.listFieldModal = ["delivery_point","elec_pricing","elec_cat","site_city","code","name","site_code","site_name"];
+            angular.forEach(data, function (value, key) {
+                var dataConvert = {};
+                dataConvert['selected'] = false;
+                dataConvert['delivery_point'] = value['meterBO']['meter.delivery_point'];
+                dataConvert['elec_pricing'] = value['meterBO']['meter.elec_pricing'];
+                dataConvert['elec_cat'] = value['meterBO']['meter.elec_cat'];
+                dataConvert['site_city'] = value['siteBO']['site.city'];
+                dataConvert['code'] = value['meterBO']['code'];
+                dataConvert['name'] = value['meterBO']['name'];
+                dataConvert['site_code'] = value['siteBO']['code'];
+                dataConvert['site_name'] = value['siteBO']['name'];
+                dataConvert['site_construction_code'] = value ['siteBO']['site.construction_code'];
+                listMeterConvert.push(dataConvert);
+
+            });
+        }else if (typeFluide == 'GAS'){
+            $scope.listFieldModal = ["delivery_point","gas_contract_rate_option","gas_car","site_city","code","name","site_code","site_name"];
+            angular.forEach(data, function (value, key) {
+                var dataConvert = {};
+                dataConvert['selected'] = false;
+                dataConvert['delivery_point'] = value['meterBO']['meter.delivery_point'];
+                dataConvert['gas_contract_rate_option'] = value['meterBO']['meter.gas_contract_rate_option'];
+                dataConvert['gas_car'] = value['meterBO']['meter.gas_car'];
+                dataConvert['site_city'] = value['siteBO']['site.city'];
+                dataConvert['code'] = value['meterBO']['code'];
+                dataConvert['name'] = value['meterBO']['name'];
+                dataConvert['site_code'] = value['siteBO']['code'];
+                dataConvert['site_name'] = value['siteBO']['name'];
+                dataConvert['site_construction_code'] = value['siteBO']['site.construction_code'];
+                listMeterConvert.push(dataConvert);
+
+            });
+        }
+        return listMeterConvert;
+    }
+
+    $scope.loadingShowModal = true;
+    $scope.getFreeMeterForGazPurchaseContract = function () {
+        var startDate = $scope.contract['contract_purchase.start_date'];
+        var endDate = $scope.contract['contract_purchase.end_date']
+        $http({
+            method: "GET",
+            url: "getFreeMeterForGazPurchaseContract.action?fluid=" + $scope.typeFluide + "&startDate=" + startDate + "&endDate=" + endDate
+        }).then(function mySuccess(response) {
+            if (response.data != '' && response.data != '[]') {
+                var data = JSON.parse(response.data);
+                $scope.listMeter = angular.copy($scope.convertDataPurchaseContract(data, $scope.typeFluide));
+                $scope.listMeterToDisplay = angular.copy($scope.listMeter);
+                var heightBody = $('.modal-analyses-child').height() - 60;
+                $(".table-content-wapper-for-meter-modal").css('height', heightBody + 'px');
+                $timeout(function () {
+                    $scope.loadingShowModal = false;
+                }, 1000);
+            } else {
+                $timeout(function () {
+                    $scope.changeTheadTable();
+                }, 100);
+                $scope.createScrollTableContentForMeterModalThead('.header-content-wapper-for-meter-modal');
+                $scope.loadingShowModal = false;
+            }
+        }, function myError(response) {
+            $scope.loadingTabContract = true;
+
+        });
+
+    }
+
+        $scope.convertStringToNumber = function(string){
+        if(string !=null && string != undefined){
+            try{
+                var number =  Math.round((parseFloat(string)));
+                return number;
+            }catch (e){
+                return string;
+            }
+        }
+        return string;
+    }
+
+//  start data call from session
+    $scope.getListTabAccess = function(){
+        if(TAB_ACCESS_FOR_PAGE_CREATE_CONTRACT != null && TAB_ACCESS_FOR_PAGE_CREATE_CONTRACT != ""){
+            // var TAB_ACCESS_FOR_PAGE_CREATE_CONTRACT = TAB_ACCESS_FOR_PAGE_CREATE_CONTRACT.split('&quot;').join(',');
+            $scope.listTabAccess = angular.copy(JSON.parse(TAB_ACCESS_FOR_PAGE_CREATE_CONTRACT));
+
+        }else {
+            $scope.listTabAccess = {
+                tab1: true,
+                tab2: false,
+                tab3: false,
+                tab4: false,
+                tab5: false
+            };
+        }
+    }
+
+    $scope.getDataContractSaved = function(){
+        if(DATA_CONTRACT_PUSH_TO_SESSION != null && DATA_CONTRACT_PUSH_TO_SESSION != "" && DATA_METER_SELECTED_PUSH_TO_SESSION != "{}"){
+            $scope.contract = angular.copy(JSON.parse(DATA_CONTRACT_PUSH_TO_SESSION));
+        }
+        $scope.getTitleCreateContract();
+    }
+
+    $scope.getProviderSaved = function(){
+        if(DATA_PROVIDER_PUSH_TO_SESSION != null && DATA_PROVIDER_PUSH_TO_SESSION != "" && DATA_METER_SELECTED_PUSH_TO_SESSION != "{}"){
+            $scope.valuesByProvider = angular.copy(JSON.parse(DATA_PROVIDER_PUSH_TO_SESSION));
+        }
+    }
+
+    $scope.getMeterSelectedSaved = function(){
+        if(DATA_METER_SELECTED_PUSH_TO_SESSION != null && DATA_METER_SELECTED_PUSH_TO_SESSION != "[]" && DATA_METER_SELECTED_PUSH_TO_SESSION != ""){
+            $scope.listMeterSelectedToDisplay = angular.copy(JSON.parse(DATA_METER_SELECTED_PUSH_TO_SESSION));
+            angular.forEach($scope.listMeterSelectedToDisplay, function(ObjectMeter){
+                ObjectMeter['selected'] = false;
+            });
+            $scope.checkCoutMeterSelectedShowText = $scope.listMeterSelectedToDisplay.length;
+            $scope.coutMeterSelected = $scope.listMeterSelectedToDisplay.length;
+            $scope.showTable();
+
+
+        }
+    }
+
+    $scope.getDataPrixTab3FromSession = function(){
+        if(DATA_PRIX_TAB3_SELECTED_PUSH_TO_SESSION != null && DATA_PRIX_TAB3_SELECTED_PUSH_TO_SESSION != "{}" && DATA_PRIX_TAB3_SELECTED_PUSH_TO_SESSION != ""){
+            $scope.dataPrixTab3 = angular.copy(JSON.parse(DATA_PRIX_TAB3_SELECTED_PUSH_TO_SESSION));
+            $scope.prixType = $scope.dataPrixTab3['prixType'];
+        }
+    }
+
+    $scope.getDataContractLotFromSession = function(){
+        if(DATA_CONTRACT_LOT_PUSH_TO_SESSION != null && DATA_CONTRACT_LOT_PUSH_TO_SESSION != "{}" && DATA_CONTRACT_LOT_PUSH_TO_SESSION != ""){
+            $scope.contract_lot = angular.copy(JSON.parse(DATA_CONTRACT_LOT_PUSH_TO_SESSION));
+        }
+    }
+
+
+
+
+
+
+// end data call from session
+    angular.element(document).ready(function () {
+       $scope.createScrollTableContentForMetter();
+       $scope.createScrollTableContentForMetterModal();
+        // $scope.getListTabAccess();
+    });
+
+
+    $scope.checkMandatoryField = function(){
+        if( ($scope.contract['contract_purchase.contract_reference'] != undefined && $scope.contract['contract_purchase.contract_reference'] != "")
+            && ($scope.contract['contract_purchase.end_date'] != undefined && $scope.contract['contract_purchase.end_date'] != "")
+            && ($scope.contract['contract_purchase.start_date'] != undefined && $scope.contract['contract_purchase.start_date'] != "")
+            &&  ($scope.contract['contract_purchase.provider'] != undefined && $scope.contract['contract_purchase.provider'] != "")){
+                $scope.listTabAccess['tab2'] = true;
+        }else{
+            $scope.listTabAccess['tab2'] = false;
+        }
+    }
+
+    $scope.checkEnableTable4 = function(){
+
+        if($scope.prixType == 'price-fixed'){
+            if($scope.contract["contract_purchase.index_type"] != undefined  && $scope.contract["contract_purchase.index_type"] != ""){
+                $scope.listTabAccess['tab4'] = true;
+            }else{
+                $scope.listTabAccess['tab4'] = false;
+            }
+        }else if($scope.prixType == 'price-index-TRV'){
+            if(($scope.contract['contract_purchase.supplier_subscription'] != undefined && $scope.contract['contract_purchase.supplier_subscription'] != "")
+                && ($scope.contract['contract_purchase.molecule'] != undefined && $scope.contract['contract_purchase.molecule'] != "")){
+                $scope.listTabAccess['tab4'] = true;
+            }else{
+                $scope.listTabAccess['tab4'] = false;
+            }
+        }else if($scope.prixType == 'price-index-non-TRV'){
+            if(($scope.contract["contract_purchase.index_type"] != undefined  && $scope.contract["contract_purchase.index_type"] != "")
+                && ($scope.contract['contract_purchase.surcout_supplier'] != undefined  && $scope.contract['contract_purchase.surcout_supplier'] != "")){
+                $scope.listTabAccess['tab4'] = true;
+            }else{
+                $scope.listTabAccess['tab4'] = false;
+            }
+        }
+    }
+
+
+    $scope.selectAll=false;
+    $scope.selectAllMeter = function($event){
+        if($event.currentTarget.checked == true){
+            for(var i = 0; i<= $scope.listMeterToDisplay.length - 1; i++){
+                $scope.listMeterToDisplay[i].selected = $scope.selectAll;
+            }
+        }else{
+            for(var i = 0; i<=$scope.listMeterToDisplay.length - 1; i++){
+                $scope.listMeterToDisplay[i].selected = $scope.selectAll;
+            }
+        }
+    }
+    $scope.dataDofilter = [];
+    var orderBy = $filter('orderBy');
+    var chunkSize = 25;
+    $scope.modelTable = {
+        "field": {
+            "contract_reference": true,
+            "provider": true,
+            "start_date": true,
+            "end_date": true,
+            "settlement_date": true,
+            "fluid": true,
+            "vendor_counterpart": true,
+            "state": true,
+            "status": true
+        },
+        "sort": {
+            "fieldSort": "site_code",
+            "typeSort": "asc"
+        },
+        "filter": {
+            "fieldFilter": "",
+            "valueFilter": ""
+        },
+        "newListAllKeyUI":[]
+    };
+    // $scope.autoCompleteOpt = {
+    //     field: fieldFilter,
+    //     value: $scope.autoCompleteOpt.value,
+    //     showFilter: true,
+    //     searchText: ""
+    // };
+
+    // tvcao
+    $scope.autoCompleteOpt = {
+        field: "",
+        value: "",
+        showFilter: false,
+        checkSelect: false
+    };
+
+    $scope.autoCompleteOptMeterSelected = {
+        field: "",
+        showFilterMeterSelected: false,
+        value: ""
+    }
+
+    $scope.autoCompleteOptMeterSelectedModal = {
+        field: "",
+        showFilterMeterSelected: false,
+        value: ""
+    }
+    $scope.showFilterMeterSelected = function (fieldFilter) {
+        if($scope.autoCompleteOptMeterSelected.field != fieldFilter){
+            $scope.autoCompleteOptMeterSelected = {
+                field: fieldFilter,
+                showFilterMeterSelected: true,
+                value: ""
+            }
+        }else{
+            $scope.autoCompleteOptMeterSelected.field = fieldFilter;
+            $scope.autoCompleteOptMeterSelected.showFilterMeterSelected = true;
+        }
+    }
+    $scope.showFilterMeterSelectedModal = function (fieldFilter) {
+        if($scope.autoCompleteOptMeterSelectedModal.field != fieldFilter){
+            $scope.autoCompleteOptMeterSelectedModal = {
+                field: fieldFilter,
+                showFilterMeterSelected: true,
+                value: ""
+            }
+        }else{
+            $scope.autoCompleteOptMeterSelectedModal.field = fieldFilter;
+            $scope.autoCompleteOptMeterSelectedModal.showFilterMeterSelected = true;
+        }
+    }
+
+    var timeoutSearchHierarchy;
+    $scope.searchHierarchyHandle = function (ev,key) {
+        var previousSearchText = $(ev.target).attr('previous-value');
+        var searchText = $(ev.target).val();
+        var searchWrapper$ = $(ev.target).closest('.filter-input-for-meter');
+        $scope.autoCompleteOptMeterSelected.value = searchText;
+        if (searchText != previousSearchText) {
+            $timeout.cancel(timeoutSearchHierarchy);
+            timeoutSearchHierarchy = $timeout(function () {
+                if (searchText != '') {
+                    searchWrapper$.addClass('searching');
+                } else {
+                    searchWrapper$.removeClass('searching');
+                }
+                $scope.getCountMeterSelected();
+            }, 300);
+        }
+        $scope.setHeightFisrtColumnTableMeterSelected();
+    };
+    $scope.searchHierarchyHandleModal = function (ev,key) {
+        var previousSearchText = $(ev.target).attr('previous-value');
+        var searchText = $(ev.target).val();
+        var searchWrapper$ = $(ev.target).closest('.filter-input-for-meter-modal');
+        $scope.autoCompleteOptMeterSelectedModal.value = searchText;
+        if (searchText != previousSearchText) {
+            $timeout.cancel(timeoutSearchHierarchy);
+            timeoutSearchHierarchy = $timeout(function () {
+                if (searchText != '') {
+                    searchWrapper$.addClass('searching');
+                } else {
+                    searchWrapper$.removeClass('searching');
+                }
+                $scope.getCountMeterSelected();
+            }, 300);
+        }
+
+    };
+    // $scope.objectSearchMeterSelected = {
+    //     delivery_point : "",
+    //     elec_pricing : "",
+    //     code : "",
+    //     name : "",
+    //     site_code : "",
+    //     site_name : "",
+    //     site_city : "",
+    //     site_construction_code : "",
+    //     elec_cat : ""
+    // }
+
+
+    $scope.clearSearchTextHierarchy = function(ev,key){
+        $scope.autoCompleteOptMeterSelected.value = "";
+        var searchWrapper$ = $(ev.target).closest('.filter-input-for-meter');
+        searchWrapper$.removeClass('searching');
+        $timeout(function () {
+            $scope.getCountMeterSelected();
+            $scope.setHeightFisrtColumnTableMeterSelected();
+        });
+    }
+
+    $scope.clearSearchTextHierarchyModal = function(ev,key){
+        $scope.autoCompleteOptMeterSelectedModal.value = "";
+        var searchWrapper$ = $(ev.target).closest('.filter-input-for-meter-modal');
+        searchWrapper$.removeClass('searching');
+        $timeout(function () {
+            $scope.getCountMeterSelected();
+            $scope.setHeightFisrtColumnTableMeterSelected();
+        });
+    }
+
+
+
+
+
+    $scope.showFilterUI = {
+        // $scope.listFieldModal = ["delivery_point","elec_pricing","code","name","site_code","site_name","site_city","site_construction_code","elec_cat"];
+        "delivery_point" : false,
+        "elec_pricing" : false,
+        "code" : false,
+        "name" : false,
+        "site_code" : false,
+        "site_name" : false,
+        "site_city" : false,
+        "site_construction_code" : false,
+        "elec_cat" : false
+    };
+    $scope.showFilter = function (fieldFilter) {
+        $scope.showFilterUI[fieldFilter] = true;
+        $scope.autoCompleteOpt = {
+            field: fieldFilter,
+            value: $scope.autoCompleteOpt.value,
+            showFilter: true,
+            searchText: ""
+        };
+
+    }
+
+    $scope.cancel = function () {
+        // $('#modal-analyses-meter').modal().hide();
+        // $('.modal-backdrop').css('display','none');
+        angular.forEach($scope.listMeterToDisplay,function(objectMeter){
+                    objectMeter.selected = false;
+            });
+        $('#checkbox-all-meter-modal')[0].checked = false;
+
+    }
+
+    $scope.cancelModalRemoveMeter = function () {
+        $('#modal-dialog-remove-meter').modal().hide();
+        $('.modal-backdrop').css('display','none');
+    }
+
+    $scope.showLoaderTableMeterSelected = function(){
+        $scope.loadingTableMeterSelected = true;
+    }
+
+
+    $scope.hideLoaderTableMeterSelected = function(){
+        $scope.loadingTableMeterSelected = false;
+    }
+    $scope.setHeightForTableMeterSelected = function(){
+        var heightBody = $('.dp-panel-body').height();
+        var heightHead = $('.header-content-wapper-for-meter').height() + 25;
+
+        $(".tbody-table-content-wapper-for-meter").css('height',heightBody - heightHead );
+    }
+    $scope.listMeterSelected = [];
+    $scope.submitGetMeterSelected = function(){
+        // var listMeterNoSelected = [];
+        // angular.forEach($scope.listMeterToDisplay,function(objectMeter){
+        //     if(objectMeter.selected == false){
+        //         listMeterNoSelected.push(objectMeter);
+        //     }
+        // });
+        // angular.forEach($scope.listMeterToDisplay,function(objectMeter){
+        //     if(objectMeter.selected == true){
+        //         objectMeter.selected = false;
+        //         $scope.listMeterSelected.push(objectMeter);
+        //     }
+        //
+        // });
+        var dataTemp = angular.copy($scope.listMeterToDisplay);
+        for(var i = dataTemp.length - 1; i >= 0 ; i--){
+            if( dataTemp[i].selected == true){
+                dataTemp[i].selected = false;
+                $scope.listMeterSelectedToDisplay.push(dataTemp[i]);
+                dataTemp.splice(i,1);
+            }
+        }
+
+        for(var i = 0 ; i < $scope.listMeterSelectedToDisplay.length ; i++){
+            if( $scope.listMeterSelectedToDisplay[i].selected == true){
+                $scope.listMeterSelectedToDisplay[i].selected = false;
+            }
+        }
+        $('#checkbox-all-meter-modal')[0].checked = false;
+        $scope.checkClickFluide =false;
+        $('#checkbox-all-meter')[0].checked = false;
+        // $scope.listMeterToDisplay = [];
+        $scope.listMeterToDisplay = angular.copy(dataTemp);
+        // $scope.listMeterSelectedToDisplay = angular.copy($scope.listMeterSelected);
+        setTimeout(function () {
+            $scope.setHeightFisrtColumnTableMeterSelected();
+            $scope.setHeightForTableMeterSelected();
+        });
+        $scope.coutMeterSelected = $scope.listMeterSelectedToDisplay.length;
+        $scope.checkCoutMeterSelectedShowText = angular.copy($scope.coutMeterSelected);
+        $scope.showTable();
+        $scope.showAndHideTableMeterSelected();
+        $scope.isCheckShowButtomRemove = false;
+        $('#modal-analyses-meter').modal().hide();
+        $('.modal-backdrop').css('display','none');
+
+    }
+
+    $scope.validateNumberInput = function(){
+
+    }
+
+
+    $scope.cancelActionStepCreateContract = function(){
+        if($scope.currentStep == 1 ){
+            if(DATA_CONTRACT_PUSH_TO_SESSION != null && DATA_CONTRACT_PUSH_TO_SESSION != ""){
+                var data = angular.copy(JSON.parse(DATA_CONTRACT_PUSH_TO_SESSION));
+                $scope.contract['contract_purchase.contract_reference'] = data['contract_purchase.contract_reference'];
+                $scope.contract['contract_purchase.provider'] = data['contract_purchase.provider'];
+                $scope.contract['contract_purchase.start_date'] = data['contract_purchase.start_date'];
+
+                if($scope.contract['contract_purchase.start_date'] != undefined){
+                    $('#start-date')[0].innerHTML = moment($scope.contract['contract_purchase.start_date'], "YYYY-MM-DD").format('DD/MM/YYYY');
+                }else{
+                    $('#start-date')[0].innerHTML = "";
+                }
+                $scope.contract['contract_purchase.end_date'] = data['contract_purchase.end_date'];
+                if($scope.contract['contract_purchase.end_date'] != undefined){
+                    $('#end-date')[0].innerHTML = moment($scope.contract['contract_purchase.end_date'], "YYYY-MM-DD").format('DD/MM/YYYY');
+                }else{
+                    $('#end-date')[0].innerHTML = "";
+                }
+                $scope.contract['contract_purchase.settlement_date'] = data['contract_purchase.settlement_date'];
+                if($scope.contract['contract_purchase.settlement-date'] != undefined){
+                    $('#settlement-date')[0].innerHTML =  moment($scope.contract['contract_purchase.settlement-date'], "YYYY-MM-DD").format('DD/MM/YYYY');
+                }else{
+                    $('#settlement-date')[0].innerHTML = "";
+                }
+                $scope.contract['contract_purchase.legal_entity'] = data['contract_purchase.legal_entity'];
+                $scope.contract['contract_purchase.url_ged'] = data['contract_purchase.url_ged'];
+            }else{
+                $scope.contract['contract_purchase.contract_reference'] = "";
+                $scope.contract['contract_purchase.provider'] = "";
+                $scope.contract['contract_purchase.start_date'] = "";
+                $('#start-date')[0].innerHTML = "";
+                $scope.contract['contract_purchase.end_date'] = "";
+                $('#end-date')[0].innerHTML = "";
+                $scope.contract['contract_purchase.settlement_date'] = "";
+                $('#settlement-date')[0].innerHTML = "";
+                $scope.contract['contract_purchase.legal_entity'] = "";
+                $scope.contract['contract_purchase.url_ged'] = "";
+            }
+
+            if(DATA_PROVIDER_PUSH_TO_SESSION != null && DATA_PROVIDER_PUSH_TO_SESSION != ""){
+                $scope.valuesByProvider = angular.copy(JSON.parse(DATA_PROVIDER_PUSH_TO_SESSION));
+            }else{
+                $scope.searchProviderByFluid();
+            }
+        }else if($scope.currentStep == 2 ){
+            if(DATA_METER_SELECTED_PUSH_TO_SESSION != null && DATA_METER_SELECTED_PUSH_TO_SESSION != ""){
+                $scope.listMeterSelectedToDisplay = angular.copy(JSON.parse(DATA_METER_SELECTED_PUSH_TO_SESSION));
+                $scope.coutMeterSelected = $scope.listMeterSelectedToDisplay.length;
+            }else{
+                $scope.listMeterSelectedToDisplay = [];
+                $scope.coutMeterSelected = $scope.listMeterSelectedToDisplay.length;
+            }
+        }else if($scope.currentStep == 3){
+
+            if(DATA_PRIX_TAB3_SELECTED_PUSH_TO_SESSION != null && DATA_PRIX_TAB3_SELECTED_PUSH_TO_SESSION != ""){
+                $scope.dataPrixTab3 = angular.copy(JSON.parse(DATA_PRIX_TAB3_SELECTED_PUSH_TO_SESSION));
+            }else{
+                $scope.dataPrixTab3 = {}
+            }
+        }else if($scope.currentStep == 4){
+
+        }else if($scope.currentStep == 5){
+
+        }
+        $scope.checkMandatoryField();
+    }
+
+    $scope.removeObjectToListMeterSelected = function(){
+        var dataTemp = angular.copy($scope.listMeterSelectedToDisplay);
+        for(var i = dataTemp.length - 1; i >= 0 ; i--){
+            if( dataTemp[i].selected == true){
+                dataTemp[i].selected = false;
+                $scope.listMeterToDisplay.push(dataTemp[i]);
+                dataTemp.splice(i,1);
+            }
+        }
+        $scope.listMeterSelectedToDisplay = angular.copy(dataTemp);
+        $scope.showAndHideTableMeterSelected();
+        setTimeout(function () {
+            $scope.setHeightFisrtColumnTableMeterSelected();
+        });
+        if($scope.listMeterSelectedToDisplay.length == 0){
+            ($('#checkbox-all-meter')[0]).checked = false;
+            $scope.checkCoutMeterSelectedShowText = 0;
+            $('.table-content-wapper-for-metter').addClass('hidden-table');
+            $scope.isCheckShowButtomRemove = false;
+        }
+        $scope.coutMeterSelected = $scope.listMeterSelectedToDisplay.length;
+        $scope.checkCoutMeterSelectedShowText = $scope.listMeterSelectedToDisplay.length;
+        $scope.cancelModalRemoveMeter();
+
+    }
+
+
+    function initTooltipster(origin, content) {
+        $(origin).tooltipster({
+            position: 'top',
+            theme: ['tooltipster-borderless', 'tooltipster-borderless-customized'],
+            contentAsHTML: true,
+            content: '<div>' + content + '</div>',
+            animation: 'fade',
+            delay: 100,
+            repositionOnScroll: true
+        });
+    }
+    initTooltipster('.button-add',button_add_tooltip)
+    initTooltipster('.button-remove-modal-meter', button_remove_modal_meter);
+    initTooltipster('.button-cacel-modal-meter', button_cacel_modal_meter);
+    initTooltipster('.button-circle .fa.fa-arrow-right', button_circle_arrow_right);
+    initTooltipster('.button-circle .fa.fa-arrow-left', button_circle_arrow_left);
+    initTooltipster('.button-remove',button_remove_tooltip);
+
+
+    function createTooltip(control, position, title) {
+        $(control).attr('data-toggle', 'tooltip');
+        $(control).attr('data-placement', position);
+        $(control).attr('data-original-title', title);
+        setTimeout(function(){
+            try{
+                $(control).tooltip();
+            }catch(err){
+            }
+        })
+    }
+    function getIEVersion() {
+        var sAgent = window.navigator.userAgent;
+        var Idx = sAgent.indexOf("MSIE");
+        // If IE, return version number.
+        if (Idx > 0)
+            return parseInt(sAgent.substring(Idx + 5, sAgent.indexOf(".", Idx)));
+        // If IE 11 then look for Updated user agent string.
+        else if (!!navigator.userAgent.match(/Trident\/7\./))
+            return 11;
+        else
+            return null; //It is not IE
+    }
+
+
+    /* end point de levraison contrat*/
+
+    // Price start
+    $scope.clickPrixFixe = false;
+    $scope.clickPrixIndexTRV = false;
+    $scope.clickPrixIndexNonTRV = false;
+    $scope.prixType = '';
+    $scope.isLsResultExpanded = true;
+
+
+    $scope.getValueTrigger = function(){
+        if( DATA_PRIX_TAB3_SELECTED_PUSH_TO_SESSION != null && DATA_PRIX_TAB3_SELECTED_PUSH_TO_SESSION != ""){
+            if($scope.prixType == "price-fixed"){
+                var priceFixedSelected = $('.price-fixed.content').find('.item-custom');
+                for(var i = 0; i < priceFixedSelected.length; i++){
+                    if(priceFixedSelected[i].innerHTML == $scope.dataPrixTab3['indexType']){
+                        $(priceFixedSelected[i]).triggerHandler('click');
+                    }
+                }
+                $scope.contract['contract_purchase.supplier_subscription'] = $scope.dataPrixTab3['supplierSubscription'];
+            }else if($scope.prixType == "price-index-TRV"){
+                $scope.contract['contract_purchase.supplier_subscription'] = $scope.dataPrixTab3['supplierSubscription'];
+                $scope.contract['contract_purchase.molecule'] = $scope.dataPrixTab3['molecule'];
+                $scope.contract['contract_purchase.supplier_discount_molecule'] = $scope.dataPrixTab3['supplierDiscountMolecule'] ;
+                $scope.contract['contract_purchase.supplier_discount_subscription'] = $scope.dataPrixTab3['supplierDiscountSubscription'];
+
+            }else if($scope.prixType == "price-index-non-TRV"){
+
+                var priceFixedNonTRVSelected = $('.price-index-non-TRV.content').find('.item-custom');
+                for(var i = 0; i < priceFixedNonTRVSelected.length; i++){
+                    if(priceFixedNonTRVSelected[i].innerHTML == $scope.dataPrixTab3['indexType']){
+                        $(priceFixedNonTRVSelected[i]).triggerHandler('click');
+                    }
+                }
+                $scope.contract['contract_purchase.supplier_subscription'] = $scope.dataPrixTab3['supplierSubscription'];
+                $scope.contract['contract_purchase.surcout_supplier'] =  $scope.dataPrixTab3['surcoutSupplier'];
+            }
+            $scope.listTabAccess['tab4'] = true;
+        }
+    }
+    var checkClickPriceTypeSecond = true;
+
+    $scope.clickPriceType = function (element) {
+        var prixTypeSelect = element;
+        $scope.listTabAccess['tab4'] = false;
+        $scope.prixType = prixTypeSelect;
+        $scope.contract['contract_purchase.supplier_subscription'] = "";
+        $scope.contract['contract_purchase.index_type'] = "";
+        $scope.contract['contract_purchase.surcout_supplier'] = "";
+        $scope.contract['contract_purchase.supplier_subscription'] = "";
+        $scope.contract['contract_purchase.molecule'] = "";
+        $scope.contract['contract_purchase.supplier_discount_molecule'] = "";
+        $scope.contract['contract_purchase.supplier_discount_subscription'] = "";
+        $scope.checkEnableTable4();
+        if(checkClickPriceTypeSecond == true){
+            setTimeout(function () {
+                $scope.getValueTrigger();
+            },50);
+            checkClickPriceTypeSecond = false;
+        }
+
+    };
+
+    $scope.toggleSelectBoxParent = function(event){
+        $scope.isLsResultExpanded = true;
+        var box = $(event.currentTarget).closest(".select-custom").find(".list-item");
+
+        try {
+            box.getNiceScroll().remove();
+        } catch (e) {
+        }
+
+        box.niceScroll({
+            background: "transparent",
+            cursorcolor: "rgb(129,129,130)",
+            autohidemode: true,
+            horizrailenabled: false,
+            fixed: true
+        });
+
+        if (box.hasClass("hide-box")) {
+            box.removeClass("hide-box");
+        } else {
+            box.addClass("hide-box");
+        }
+        $('.filterByStringFilterSelect').addClass("hide-box");
+    }
+
+    var valueSelectFilter = "";
+    var textSelecteedFilter = "";
+    var valueSelectDisplay = "";
+
+    $scope.selectItemFilter = function(event){
+        var value = $(event.currentTarget).attr("value");
+        $scope.contract["contract_purchase.index_type"] = value;
+        valueSelectFilter = value;
+        valueSelectDisplay = value;
+        var text = $(event.currentTarget).text();
+        textSelecteedFilter = text;
+        var box = $(event.currentTarget).closest(".select-custom");
+        box.find(".selected-value").val(value);
+        box.find(".selected-text").html(text);
+        box.find(".item-custom").removeClass("selected");
+        box.find(".selected-text").removeClass("default");
+
+        $(event.currentTarget).addClass("selected");
+        $scope.hideSelectBox(box);
+        $scope.validEmptyValueSelectBox(box);
+    }
+
+    $scope.hideSelectBox = function (ele) {
+        $(ele).find(".list-item").addClass('hide-box');
+    }
+
+    $scope.validEmptyValueSelectBox = function (ele) {
+        $(ele).removeClass("error");
+    }
+
+    $( window ).resize(function() {
+        if($scope.listMeter.length == 0) {
+            $scope.changeTheadTable();
+        }else{
+            var heightBody = $('.modal-analyses-child').height()-60;
+            $(".table-content-wapper-for-meter-modal").css('height',heightBody+'px');
+        }
+        $scope.setHeightForTableMeterSelected();
+    });
+
+
+    // Price end
+    $scope.changeTheadTable = function () {
+        var widthTable = $('.modal-analyses-child').width()-54;
+        var heightTable = $('.modal-analyses-child').height()-30;
+        $(".header-content-wapper-for-meter-modal").css('width', widthTable+'px');
+        $(".header-content-wapper-for-meter-modal").css('height', heightTable+'px');
+    }
+    // $scope.listTabAccess = angular.copy(TAB_ACCESS_FOR_PAGE_CREATE_CONTRACT);
+    // start pushContractReferenceAndFluideToSesson
+    $scope.loadingShowTableMeter = false;
+    $scope.listContractReferenceAndFluide = {};
+
+    $scope.listStepAccess = {
+        step1:false,
+        step2:false,
+        step3:false,
+        step4:false,
+        step5:false
+    }
+
+    $scope.loadingTabContract = false;
+    $scope.showAndHideRedirectTab = function(){
+        $scope.loadingTabContract = true;
+        setTimeout(function () {
+            $scope.loadingTabContract = false;
+            $scope.$apply();
+        },200);
+        if($scope.currentStep == 1){
+            $scope.listStepAccess = {
+                step1:false,
+                step2:false,
+                step3:false,
+                step4:false,
+                step5:false
+            }
+        }else if($scope.currentStep == 2){
+            $scope.listStepAccess = {
+                step1:true,
+                step2:false,
+                step3:false,
+                step4:false,
+                step5:false
+            }
+        }else if($scope.currentStep == 3){
+            $scope.listStepAccess = {
+                step1:true,
+                step2:true,
+                step3:false,
+                step4:false,
+                step5:false
+            }
+        }else if($scope.currentStep == 4) {
+            $scope.listStepAccess = {
+                step1: true,
+                step2: true,
+                step3: true,
+                step4: false,
+                step5: false
+            }
+        }else if($scope.currentStep == 5) {
+            $scope.listStepAccess = {
+                step1: true,
+                step2: true,
+                step3: true,
+                step4: true,
+                step5: false
+            }
+        }
+    }
+    $scope.showAndHideRedirectTab();
+
+    $scope.showTable =function(){
+        if($('.table-content-wapper-for-metter').hasClass('hidden-table')){
+            $('.table-content-wapper-for-metter').removeClass('hidden-table');
+        }
+    }
+
+    // $scope.setHeightForTableMeterSelected = function(){
+    //     var heightBody = $('.table-content-wapper-for-metter').height();
+    //     $(".tbody-table-content-wapper-for-meter").css('height',heightBody - 40 +'px' )
+    // }
+
+    $scope.pushContractReferenceAndFluideToSesson = function(){
+        if($scope.listMeterSelectedToDisplay.length > 0){
+            setTimeout(function () {
+                $scope.setHeightFisrtColumnTableMeterSelected();
+                $scope.createScrollTableContentForMetter();
+                $scope.setHeightForTableMeterSelected();
+            },200);
+            if($('.selected-text.title-content-isShow.custom.price-index-non-TRV').length > 0){
+                $('.selected-text.title-content-isShow.custom.price-index-non-TRV').text($scope.contract['contract_purchase.index_type']);
+            }else if($('.selected-text.title-content-isShow.custom.price-fixed').length > 0){
+                $('.selected-text.title-content-isShow.custom.price-fixed').text($scope.contract['contract_purchase.index_type']);
+            }
+        }else{
+            var param = {
+                "contractReference": $scope.contract['contract_purchase.contract_reference'],
+                "fluid": $scope.contract['contract_purchase.fluid']
+            }
+            $http({
+                method: "POST",
+                url: "getALlMeterByContractReferenceAndFluide.action",
+                params: param
+            }).then(function mySuccess(response) {
+                var data = response.data;
+                if(data != null && response.data != '[]'){
+                    data = JSON.parse(response.data);
+                    $scope.listContractReferenceAndFluide = angular.copy($scope.convertDataPurchaseContract(data,$scope.typeFluide));
+                    $scope.listMeterSelected = angular.copy($scope.listContractReferenceAndFluide);
+                    $scope.listMeterSelectedToDisplay = angular.copy($scope.listContractReferenceAndFluide);
+                    $scope.checkCoutMeterSelectedShowText = $scope.listMeterSelectedToDisplay.length;
+                    $scope.showTable();
+                    setTimeout(function () {
+                        $scope.setHeightFisrtColumnTableMeterSelected();
+                        // $scope.showAndHideTableMeterSelected();
+                        $scope.setHeightForTableMeterSelected();
+                    });
+
+                }
+            }, function myError(response) {
+
+            });
+        }
+    }
+    // end pushContractReferenceAndFluideToSesson
+//Start option tab
+    $scope.setDefaultRadio = function () {
+        var list = $(".style-radio-option");
+        for (var i = 0; i < list.length; i++) {
+            if ($(list[i]).attr("name-radio") == "revisable") {
+                $(list[i]).prop("checked", true);
+            }
+        }
+
+    }
+ $scope.changeStyleInDiv = function($event){
+        var controlParent = $($event.currentTarget).parent();
+        if($(controlParent).hasClass('no-border-bottom')) {
+            $($event.currentTarget).css('background' , 'none');
+            $($event.currentTarget).css('color' , 'black');
+            $($event.currentTarget).children("img").attr("src","../assets/images/icon/mesSite/hierarchy-expand-btn.png");
+                var list = $(".style-radio-option");
+            for(var i=0;i<list.length; i++){
+                if($(list[i]).attr("name-radio") == "revisable"){
+                    $(list[i]).prop("checked",true);
+                }
+            }
+
+            setTimeout(function () {
+                $(controlParent).removeClass('no-border-bottom');
+            },500);
+        }else {
+            $($event.currentTarget).css('background' , 'rgb(0, 124, 164)');
+            $($event.currentTarget).css('color' , 'white');
+            $($event.currentTarget).children("img").attr("src","../assets/images/icon/mesSite/hierarchy-collapse-btn.png");
+
+            $(controlParent).addClass('no-border-bottom');
+
+        }
+    }
+
+//End option tab
+    $scope.$watchGroup(['listProviderCode', 'listRegionalDirectorateCode', 'listSectorCode'], function(newValue, oldValue) {
+        setTimeout(function() {
+            try {
+                document.getElementById('listProviderCode').sumo.reload();
+                document.getElementById('listRegionalDirectorateCode').sumo.reload();
+                document.getElementById('listSectorCode').sumo.reload();
+            } catch (e) {
+
+            }
+        }, 100);
+    });
+
+}]);
+
+/* create date range picker */
+myApp.directive('dateRangePickerSingle', function () {
+    return {
+        restrict: 'A',
+        link: function (scope, element, attribute) {
+            setTimeout(function () {
+                var field_input = $(element).closest('.field-input');
+                var input = $(field_input).find('input');
+                var value = $(input).val();
+
+                if (value != null && value != '') {
+                    $(element).html(moment(value).format('DD/MM/YYYY'));
+                }
+
+                element.daterangepicker({
+                        singleDatePicker: true,
+                        showDropdowns: true
+                    },
+                    function (start, end, label) {
+                        // update for view
+                        $(element).html(moment(start).format('DD/MM/YYYY'));
+                        // update for ng-model of input
+                        $(input).val(moment(start).format('YYYY-MM-DD')).trigger('change');
+
+                        var id = $(element).attr('id');
+                        if (id == 'start-date' || id == 'end-date') {
+                            updateDeadlineLimit();
+                            if (id == 'start-date') {
+                                limitEndDate();
+                                fixUIDeadLine();
+                            }
+                        }
+                    });
+            }, 500);
+        }
+    };
+});
+
+/* update minDate and maxDate for daterangepicker: contract_purchase.termination_deadline */
+function updateDeadlineLimit() {
+    // contract_purchase.termination_deadline
+    var drp_deadline = $('#termination-deadline').data().daterangepicker;
+    // contract_purchase.start_date
+    var drp_start_date = $('#start-date').data().daterangepicker;
+    // contract_purchase.end_date
+    var drp_end_date = $('#end-date').data().daterangepicker;
+
+    drp_deadline.minDate = drp_start_date.clicked ? drp_start_date.startDate : false;
+    drp_deadline.maxDate = drp_end_date.clicked ? drp_end_date.startDate : false;
+
+    // check datepicker số 4 (deadline) sổ ra lần nào hay chưa, nếu rùi thì mới chạy update
+    if ($($('.daterangepicker')[3]).hasClass('show-calendar')) {
+        drp_deadline.updateCalendars();
+    }
+
+    // clear termination_deadline if out of range <minDate - maxDate>
+    if (drp_deadline.startDate < drp_start_date.startDate || drp_deadline.startDate > drp_end_date.startDate) {
+        $('#termination-deadline').closest('.field-input').find('input').val('').trigger('change');
+        $('#termination-deadline').html('');
+    }
+
+}
+
+/* Limit end date */
+function limitEndDate() {
+    // contract_purchase.start_date
+    var drp_start_date = $('#start-date').data().daterangepicker;
+    // contract_purchase.end_date
+    var drp_end_date = $('#end-date').data().daterangepicker;
+    // contract_purchase.termination_deadline
+    var drp_deadline = $('#termination-deadline').data().daterangepicker;
+
+    // limit for #end-date
+    drp_end_date.minDate = drp_start_date.clicked ? drp_start_date.startDate : false;
+
+    // clear end_date if start_date > end_date
+    if (drp_start_date.startDate > drp_end_date.startDate) {
+        $('#end-date').closest('.field-input').find('input').val('').trigger('change');
+        $('#end-date').html('');
+        drp_end_date.startDate = drp_start_date.startDate;
+        drp_end_date.endDate = drp_start_date.startDate;
+
+        drp_deadline.maxDate = false;
+        if ($($('.daterangepicker')[3]).hasClass('show-calendar')) {
+            drp_deadline.updateCalendars();
+        }
+    }
+
+    // sửa lỗi giao diện #end-date: đặt lại ngày cho #end-date bằng ngày của #start-date 
+    // mục đích: daterangepicker tự nhảy đến ngày tương ứng
+    if ($('#end-date-input').val() == '') {
+        drp_end_date.startDate = drp_start_date.startDate;
+        drp_end_date.endDate = drp_start_date.startDate;
+    }
+
+    // check datepicker số 2 (end date) sổ ra lần nào hay chưa, nếu rùi thì mới chạy update, ko là lỗi
+    if ($($('.daterangepicker')[1]).hasClass('show-calendar')) {
+        drp_end_date.updateCalendars();
+    }
+}
+
+function fixUIDeadLine() {
+    var drp_deadline = $('#termination-deadline').data().daterangepicker;
+    var drp_start_date = $('#start-date').data().daterangepicker;
+
+    drp_deadline.startDate = drp_start_date.startDate;
+    drp_deadline.endDate = drp_start_date.startDate;
+
+    // check datepicker số 4 (deadline) sổ ra lần nào hay chưa, nếu rùi thì mới chạy update, ko là lỗi
+    if ($($('.daterangepicker')[3]).hasClass('show-calendar')) {
+        drp_deadline.updateCalendars();
+    }
+}
+
+/* begin select dropdown */
+{
+    function toggleSelect(elem) {
+        var field_input = $(elem).closest('.field-input');
+
+        if (field_input.find('input').is(':disabled')) return;
+
+        if (!field_input.hasClass('expand')) {
+            collapseLastSelect();
+            var field_input = $(elem).closest('.field-input');
+            field_input.find('select').slideDown(100);
+            field_input.addClass('expand');
+            field_input.find('i').addClass('arrow-up');
+        } else {
+            field_input.find('select').slideUp(100);
+            field_input.removeClass('expand');
+            field_input.find('i').removeClass('arrow-up');
+        }
+    }
+
+    function chooseOption(elem) {
+        $(elem).slideUp(100);
+        $(elem).closest('.field-input').find('i').toggleClass('arrow-up');
+    }
+
+    function collapseLastSelect() {
+        var input = document.querySelector('.field-input.perial-select.expand');
+        if (input != null) {
+            var field_input = $(input).closest('.field-input');
+            field_input.find('select').slideUp(100);
+            field_input.removeClass('expand');
+            field_input.find('i').removeClass('arrow-up');
+        }
+    }
+
+    $(document).click(function (event) {
+        var inputs = $('.field-input.perial-select .input-arrow');
+        for (var i = 0; i < inputs.length; i++) {
+            if (inputs[i].contains(event.target)) {
+                return;
+            }
+        }
+
+        collapseLastSelect();
+    });
+}
+/* end select dropdown */
+
+/* scrollbar for tab general-infor */
+$('.general-infor').mCustomScrollbar({
+    axis: "y",
+    theme: "3d-dark"
+});
+
+// $(window).on("click", function(event){
+//     if (!($(event.target).hasClass('no-close-box'))){
+//         var contractDetail = angular.element('#contractDetailController').scope();
+//         contract.$applyAsync(function(){
+//             contract.autoCompleteOptMeterSelected.showFilterMeterSelected  = false;
+//         });
+//     }
+// });
+
+
+$(document).click(function(event) {
+    if(!$(event.target).closest('.no-close-input-filter').length) {
+        if($('.no-close-input-filter').is(":visible")) {
+            var contractDetail = angular.element('#contractDetailController').scope();
+            contractDetail.$applyAsync(function(){
+                contractDetail.autoCompleteOptMeterSelected.showFilterMeterSelected  = false;
+                if(contractDetail.autoCompleteOptMeterSelected.value == null || contractDetail.autoCompleteOptMeterSelected.value == ""){
+                    contractDetail.autoCompleteOptMeterSelected.field = "";
+                }
+            });
+        }
+    }
+});
+
+$(document).click(function(event) {
+    if(!$(event.target).closest('.no-close-filter').length) {
+        if($('.no-close-filter').is(":visible")) {
+            var contractDetail = angular.element('#contractDetailController').scope();
+            contractDetail.$applyAsync(function(){
+                contractDetail.autoCompleteOptMeterSelectedModal.showFilterMeterSelected  = false;
+                if(contractDetail.autoCompleteOptMeterSelectedModal.value == null || contractDetail.autoCompleteOptMeterSelectedModal.value == ""){
+                    contractDetail.autoCompleteOptMeterSelectedModal.field = "";
+                }
+            });
+        }
+    }
+});
+
+$(document).ready(function() {
+    TAB_ACCESS_FOR_PAGE_CREATE_CONTRACT = replaceAll(TAB_ACCESS_FOR_PAGE_CREATE_CONTRACT,'&quot;','"');
+    DATA_CONTRACT_PUSH_TO_SESSION = replaceAll(DATA_CONTRACT_PUSH_TO_SESSION,'&quot;','"');
+    DATA_PROVIDER_PUSH_TO_SESSION = replaceAll(DATA_PROVIDER_PUSH_TO_SESSION,'&quot;','"');
+    DATA_METER_SELECTED_PUSH_TO_SESSION = replaceAll(DATA_METER_SELECTED_PUSH_TO_SESSION,'&quot;','"');
+    DATA_PRIX_TAB3_SELECTED_PUSH_TO_SESSION = replaceAll(DATA_PRIX_TAB3_SELECTED_PUSH_TO_SESSION,'&quot;','"');
+    DATA_CONTRACT_LOT_PUSH_TO_SESSION = replaceAll(DATA_CONTRACT_LOT_PUSH_TO_SESSION,'&quot;','"');
+    var contractDetail = angular.element('#contractDetailController').scope();
+    contractDetail.$applyAsync(function(){
+        contractDetail.getListTabAccess();
+        contractDetail.getDataContractSaved();
+        contractDetail.getProviderSaved();
+        contractDetail.getMeterSelectedSaved();
+        contractDetail.getDataPrixTab3FromSession();
+        contractDetail.getDataContractLotFromSession();
+    });
+
+    setTimeout(function(){
+        initTooltipster('.input-tooltip-tad',input_tooltip_tad);
+        initTooltipster('.input-tooltip-tacd',input_tooltip_tacd);
+        initTooltipster('.input-tooltip-tpad',input_tooltip_tpad);
+        initTooltipster('.input-tooltip-tct',input_tooltip_tct);
+    },6000);
+});
+
+
+
+function replaceAll(str, find, replace) {
+    return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
+}
+function escapeRegExp(str) {
+    return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+}
+$(document).ready(function() {
+    $('select.sumo').SumoSelect();
+});

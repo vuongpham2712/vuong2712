@@ -1,0 +1,75 @@
+/**
+ * Created by vtlan on 26/06/2017.
+ */
+.pageTitle {
+    font-family: 'Montserrat';
+    color: #064060;
+    font-size: 16pt;
+    }
+.widgetTitle {
+    font-family: 'Montserrat';
+    color: #666666;
+    font-size: 16.1126pt;
+    }
+
+.widgetTitle::before {
+    content: "\f111";
+    font-size: 11pt;
+    color: #A9D5E0;
+    font-family: 'FontAwesome';
+    padding: 11px;
+    }
+.tableTitle {
+    font-family: 'Montserrat';
+    color: #404040;
+    }
+.infoImpWidget {
+    font-family: 'Montserrat';
+    color: #404040;
+    font-size: 13pt;
+    }
+.tableText {
+    font-family: 'Montserrat';
+    color: #404040;
+    }
+.symbolDataKeyWidgetLegend {
+    font-family: 'Montserrat';
+    color: #1A1A1A;
+    font-size: 8pt;
+    }
+.dataKeyWidgetLegend {
+    font-family: 'Montserrat';
+    color: #1A1A1A;
+    font-size: 12pt;
+    line-height: 1;
+    }
+.symboleDataKeyWidget {
+    font-family: 'Montserrat';
+    color: #ED7D31;
+    font-size: 14pt;
+    }
+.dataKeyWidget {
+    font-family: 'Montserrat';
+    color: #064060;
+    font-size: 32pt;
+    }
+.titleHeaderNav {
+    font-family: 'Montserrat';
+    color: #808080;
+    font-size: 12pt;
+    }
+.titleHeaderNavSelect {
+    font-family: 'Montserrat';
+    color: #064060;
+    font-size: 12pt;
+    }
+.chartLegend {
+    font-family: 'Montserrat';
+    color: #595959;
+    font-size: 9.29496pt;
+    }
+.titleChartLegend {
+    font-family: 'Montserrat';
+    color: #595959;
+    font-size: 10.4723pt;
+    }

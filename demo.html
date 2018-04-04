@@ -4,63 +4,82 @@
   <title>Deadline</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=11" />
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
   <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+  <link rel="stylesheet" href="contract.css">
   <link rel="stylesheet" type="text/css" href="facturation.css">
   <script src="facturation.js"></script>
 </head>
 <body>
 	<div class="container">
-		<form action="http://5abb53f015c1650014086a5b.mockapi.io/api/provider/tab5/" method="POST" ng-app="facturationApp" ng-controller="facturationCtrl">
+		<form action="#" method="POST" ng-app="facturationApp" ng-controller="facturationCtrl">
 			<div class="row">
 				<div class="col-md-6">
 					<div class="modalite">
 						<div class="modalite-heading">
-							<h4>MODALITÉS DE PAIEMENT</h4>
+							<p>MODALITÉS DE PAIEMENT</p>
 						</div>
 						<!-- end modalite-heading-->
 						<div class="modalite-body">
 							<div class="paiement">
 								<div class="modede-paiement row">
-									<label for="" class="col-md-5">Mode de paiement</label>
-									<select class="col-md-7" ng-model="mode" ng-options="x for (x, y) in modes" ng-change="myFun()" name="typett">
-										
-									</select>
+									<div class="field-label col-sm-5">
+										<label>Mode de paiement</label>
+									</div>
+									<div class="col-sm-7">
+										<select ng-model="mode" ng-options="x for (x, y) in modes" ng-change="myFun()" class="modede-paiement-select bd-silver">						
+										</select>										
+									</div>
 								</div>
 								<!-- end modede-paiement -->
-								<div class="delaide-paiement row">
-									<label for="delai" class="col-md-5">Délai de paiement</label>
-									<input type="text" ng-disabled="count" ng-model="ac" class="col-md-3" name="timett">
-									<select ng-model="date1" ng-options="x for x in dates1" ng-disabled="count" ng-init="date1=datesDefault" class="col-md-3 col-md-offset-1" ></select>
+								<div class="delaide-paiement clearfix">
+									<div class="field-label float-left">
+                                      	<label>Délai de paiement</label>
+                                    </div>
+                                    <div class="field-input float-right" ng-disabled="count">
+                                        <input type="text" ng-model="contract['contract_facturation.delai']" class="delaide-input ng-pristine ng-valid ng-empty ng-touched" aria-invalid="false" style="" ng-disabled="count">
+                                        <select class="field-select" ng-model="date" ng-options="x for x in dates1" ng-init="date=datesDefault" ng-disabled="count"></select>
+									</div>									                                            
 								</div>
 							</div>
 							<!-- end paiement -->
 							<div class="ristourne">
 								<div class="ristourne-body">
-									<div class="ristourne-item row">
-										<label for="" class="col-md-5">Ristourne en cas de paiement anticipé</label>
-										<div class="col-md-7 row">
-											<span class="col-md-3">Sans</span>
-											<label class="switch col-md-6">
-												<input type="checkbox" ng-model="cb">
-												<span class="slider round"></span>
-											</label>
-											<span class="col-md-3">Avec</span>
+									<div class="ristourne-item clearfix">
+										<div class="field-label float-left">
+											<label>Ristourne en cas de paiement anticipé</label>
 										</div>
+										<div class="inline-block clear-both" style="margin-top: 3px;">
+                                            <input type="checkbox" id="tacit-agreement" class="switch-input ng-untouched ng-valid ng-dirty ng-valid-parse ng-empty" ng-model="cb" aria-invalid="false" style="">
+                                            <div class="switch-false float-left">Sans</div>
+                                            <label for="tacit-agreement" class="switch-label float-left"></label>
+                                            <div class="switch-true float-left">Avec</div>
+                                         </div>
 									</div>
 									<!-- end ristourne-item -->
 									<div class="ristourne-hide" ng-hide="!cb">
-										<div class="anticipation row">
-											<label for="" class="col-md-5">Délai d’anticipation</label>
-											<input type="text" class="col-md-3" name="field1">
-											<select ng-model="date2" ng-options="x for x in dates2" ng-init="date2=datesDefault" class="col-md-3 col-md-offset-1" ng-disabled="true"></select>
+										<div class="anticipation clearfix">
+											<div class="field-label float-left">
+												<label>Délai d’anticipation</label>
+											</div>
+											<div class="field-input float-right">
+                                        		<input type="text" ng-model="contract['contract_facturation.anticipation']" class="ng-pristine ng-valid ng-empty ng-touched" aria-invalid="false" style="">
+                                        		<select ng-model="date2" ng-options="x for x in dates2" ng-init="date2=datesDefault" ng-disabled="true"></select>
+											</div>   
+											<!-- <div class="field-input-20 	float-right">
+												<select ng-model="date2" ng-options="x for x in dates2" ng-init="date2=datesDefault" ng-disabled="true"></select>
+											</div> -->
 										</div>
 										<!-- end anticipation -->
-										<div class="valeur row">
-											<label for="" class="col-md-5">Valeur de la ristourne</label>
+										<div class="valeur clearfix">
+											<div class="field-label float-left">
+												<label>Valeur de la ristourne</label>
+											</div>
 											<input type="text" class="col-md-3" name="field2">
 											<select ng-model="ratio" ng-options="x for x in ratios" ng-init="ratio=ratiosDefault" class="col-md-3 col-md-offset-1" ng-disabled="true"></select>
 										</div>
@@ -79,24 +98,28 @@
 				<div class="col-md-6">
 					<div class="compte">
 						<div class="compte-heading">
-							<h4>COMPTE DÉBITEUR</h4>
+							COMPTE DÉBITEUR
 						</div>
 						<!-- end cmpte-headind -->
 						<div class="compte-body">
-							<div class="contract-multi row">
-								<label for="" class="col-md-5">Contrat multi-débiteur</label>
-								<div class="col-md-7 row">
-									<span class="col-md-3">Non</span>
-									<label class="switch col-md-6">
-										<input type="checkbox" ng-model="cb">
-										<span class="slider round"></span>
-									</label>
-									<span class="col-md-3">Oui</span>
+							<div class="contract-multi clearfix">
+								<div class="field-label float-left">
+									<label>Contrat multi-débiteur</label>
 								</div>
+								<div class="inline-block clearfix" style="margin-top: 3px;">
+                                    <input type="checkbox" id="tacit-agreement-b" class="switch-input ng-untouched ng-valid ng-dirty ng-valid-parse ng-empty" ng-model="cb1" aria-invalid="false" style="">
+                                            <div class="switch-false float-left">Sans</div>
+                                            <label for="tacit-agreement2" class="switch-label float-left"></label>
+                                            <div class="switch-true float-left">Avec</div>
+                                         </div>
 							</div>
-							<div class="iban row">
-								<label for="" class="col-md-5">IBAN</label>
-								<input type="text" class="col-md-7">
+							<div class="iban clearfix">
+								<div class="field-label float-left">
+                                    <label>IBAN</label>
+                                </div>
+                                <div class="field-input float-right">
+                                    <input type="text" ng-model="contract['contract_facturation.iban']" class="ng-pristine ng-valid ng-empty ng-touched" aria-invalid="false" style="">
+								</div>
 							</div>
 						</div>
 						<!-- end compte-body -->

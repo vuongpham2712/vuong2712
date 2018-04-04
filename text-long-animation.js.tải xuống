@@ -1,0 +1,50 @@
+/**
+ *
+ * Created by: User: ntson01 -- Date: 2/5/2018 -- Time: 2:17 PM
+ *
+ * @string parentSelector : parent's jquery selector
+ * @string childSelector : child's jquery selector
+ * @boolean isTextAlignRight : can be null, value = true if parent has 'text-align:right' css attribute
+ */
+function bindTextLongAnimation(parentSelector, childSelector, isTextAlignRight) {
+    $(parentSelector).unbind('mouseenter');
+    $(parentSelector).unbind('mouseleave');
+    $(parentSelector).on('mouseenter', function() {
+        var child = $(this).find(childSelector);
+        var parentWidth = $(this).width();
+        $(child).hide();
+        var childWidth = $(child).width();
+        $(child).show();
+        if (childWidth > parentWidth) {
+            if(isTextAlignRight) {
+                $(parentSelector).css({
+                    'text-align': 'left'
+                });
+            }
+            repeatTextLongAnimation(child, childWidth, parentWidth);
+        }
+    });
+
+    $(parentSelector).on('mouseleave', function() {
+        var child = $(this).find(childSelector);
+        $(child).clearQueue().stop();
+        $(child).css('margin-left',0);
+        if(isTextAlignRight) {
+            $(parentSelector).css({
+                'text-align': 'right'
+            });
+        }
+    });
+}
+
+function repeatTextLongAnimation(child, childWidth, parentWidth) {
+    $(child).animate({
+        marginLeft: (-childWidth) + 'px'
+    }, 6000, "linear");
+
+    $(child).animate({
+        marginLeft: parentWidth + 'px'
+    }, 0, function () {
+        repeatTextLongAnimation(child, childWidth, parentWidth);
+    });
+}

@@ -1,0 +1,24 @@
+    // $(".sidebar-hamburger").click(function (e) {
+    //     e.preventDefault();
+    //     $("#wrapper").toggleClass("active-sidebar");
+    //     var sidebarStatus = $('#wrapper').hasClass('active-sidebar');
+    //     if (sidebarStatus == true) {
+    //         $pageWrapper = $('#page-content-wrapper');
+    //         $pageWrapper.click(function () {
+    //                 $("#wrapper").removeClass("active-sidebar");
+    //             })
+    //     } else {
+    //     }
+    //
+    // });
+  /* $(window).resize(function () {
+        var viewWidth = window.innerWidth || document.body.clientWidth;
+        var viewHeight = window.innerHeight || document.body.clientHeight;
+        //console.log(viewHeight);
+    });*/
+
+   function OpenInNewTabWinBrowser(url) {
+    	  var win = window.open(url, "blank");
+    	  win.focus();
+    }
+    

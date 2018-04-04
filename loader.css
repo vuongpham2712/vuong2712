@@ -1,0 +1,279 @@
+.div_login_loader {
+  height: 26.5vh;
+  width: 98%;
+  background: white;
+  position: absolute;
+  top: 40vh;
+  opacity: 1;
+  margin-left: 0.5vh;
+  margin-right: 0.5vh;
+}
+
+.loading-container {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    display: none;
+    z-index: 19;
+    background: #fff;
+    left: 0;
+}
+.cssload-triangles {
+    transform: translate(-50%, -50%);
+    -o-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    -webkit-transform: translate(-50%, -50%);
+    -moz-transform: translate(-50%, -50%);
+    height: 79px;
+    width: 88px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+}
+
+.cssload-tri {
+    position: absolute;
+    animation: cssload-pulse 862.5ms ease-in infinite;
+    -o-animation: cssload-pulse 862.5ms ease-in infinite;
+    -ms-animation: cssload-pulse 862.5ms ease-in infinite;
+    -webkit-animation: cssload-pulse 862.5ms ease-in infinite;
+    -moz-animation: cssload-pulse 862.5ms ease-in infinite;
+    border-top: 26px solid rgb(0, 124, 164);
+    /*border-top: 26px solid rgb(112, 164, 214);*/
+    /*border-top: 26px solid rgb(184, 218, 244);*/
+    /*border-top: 26px solid rgb(154, 184, 211);*/
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-bottom: 0px;
+}
+
+.cssload-tri.cssload-invert {
+    border-top: 0px;
+    border-bottom: 26px solid rgb(0, 124, 164);
+    /*border-bottom: 26px solid rgb(112, 164, 214);*/
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+}
+
+.cssload-tri:nth-child(1) {
+    left: 29px;
+}
+
+.cssload-tri:nth-child(2) {
+    left: 15px;
+    top: 26px;
+    animation-delay: -143.75ms;
+    -o-animation-delay: -143.75ms;
+    -ms-animation-delay: -143.75ms;
+    -webkit-animation-delay: -143.75ms;
+    -moz-animation-delay: -143.75ms;
+}
+
+.cssload-tri:nth-child(3) {
+    left: 29px;
+    top: 26px;
+}
+
+.cssload-tri:nth-child(4) {
+    left: 44px;
+    top: 26px;
+    animation-delay: -718.75ms;
+    -o-animation-delay: -718.75ms;
+    -ms-animation-delay: -718.75ms;
+    -webkit-animation-delay: -718.75ms;
+    -moz-animation-delay: -718.75ms;
+}
+
+.cssload-tri:nth-child(5) {
+    top: 53px;
+    animation-delay: -287.5ms;
+    -o-animation-delay: -287.5ms;
+    -ms-animation-delay: -287.5ms;
+    -webkit-animation-delay: -287.5ms;
+    -moz-animation-delay: -287.5ms;
+}
+
+.cssload-tri:nth-child(6) {
+    top: 53px;
+    left: 15px;
+    animation-delay: -287.5ms;
+    -o-animation-delay: -287.5ms;
+    -ms-animation-delay: -287.5ms;
+    -webkit-animation-delay: -287.5ms;
+    -moz-animation-delay: -287.5ms;
+}
+
+.cssload-tri:nth-child(7) {
+    top: 53px;
+    left: 29px;
+    animation-delay: -431.25ms;
+    -o-animation-delay: -431.25ms;
+    -ms-animation-delay: -431.25ms;
+    -webkit-animation-delay: -431.25ms;
+    -moz-animation-delay: -431.25ms;
+}
+
+.cssload-tri:nth-child(8) {
+    top: 53px;
+    left: 44px;
+    animation-delay: -575ms;
+    -o-animation-delay: -575ms;
+    -ms-animation-delay: -575ms;
+    -webkit-animation-delay: -575ms;
+    -moz-animation-delay: -575ms;
+}
+
+.cssload-tri:nth-child(9) {
+    top: 53px;
+    left: 58px;
+    animation-delay: -575ms;
+    -o-animation-delay: -575ms;
+    -ms-animation-delay: -575ms;
+    -webkit-animation-delay: -575ms;
+    -moz-animation-delay: -575ms;
+}
+
+@keyframes cssload-pulse {
+    0% {
+        opacity: 1;
+    }
+    16.666% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+@-o-keyframes cssload-pulse {
+    0% {
+        opacity: 1;
+    }
+    16.666% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+@-ms-keyframes cssload-pulse {
+    0% {
+        opacity: 1;
+    }
+    16.666% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+@-webkit-keyframes cssload-pulse {
+    0% {
+        opacity: 1;
+    }
+    16.666% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+@-moz-keyframes cssload-pulse {
+    0% {
+        opacity: 1;
+    }
+    16.666% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+#mainModal001 {
+    width: 650px;
+    height: 260px;
+    font-size: 14px;
+    display: inline-block;
+    text-align: center!important;
+    vertical-align: middle;
+}
+.modal-analyses-container .modal-content {
+    border-radius: 0;
+    height: 100%;
+
+}
+.modal-header.mainHeader{
+    padding: 15px;
+    text-align: left!important;
+    border-bottom: 1px solid #e5e5e5;
+}
+.modal-analyses-container .modal-header {
+    height: 55px;
+}
+.modal-analyses-container .modal-footer {
+    height: 70px;
+    text-align: center;
+}
+.modal-analyses-container .btn-cancel-active {
+    background-image: url(../images/icon/ico/ico-cancel-active.png);
+    margin-right: 25px;
+}
+.modal-analyses-container .btn-cancel-active:hover, .modal-analyses-container .btn-save-active:hover {
+    opacity: 0.7;
+}
+
+.modal-analyses-container .btn-save-active {
+    background-image: url(../images/icon/ico/save_active.png);
+}
+
+.modal-analyses-container .btn-cancel-active:hover, .modal-analyses-container .btn-save-active:hover {
+    opacity: 0.7;
+}
+
+.modal-analyses-container .modal-body {
+    padding: 0;
+    height: calc(100% - 125px);
+}
+
+.modal-analyses-container .btn-form-analyses {
+    height: 35px;
+    width: 35px;
+    background-repeat: no-repeat;
+    background-size: 100%;
+}
+
+.modal-analyses-left {
+    border-right: solid 1px #e5e5e5;
+}
+
+.modal-analyses-container .close {
+    margin-top: -6px;
+    font-size: 35px;
+    font-weight: normal;
+}
+
+#span-mainmodal01, #span-mainmodal02{
+    text-align: center!important;
+}
+
+.modal-analyses01{
+    /* margin-top: 13px; */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 90%;
+    transform: translate(-50%,-50%);
+    -ms-transform: translate(-50%,-50%);
+}
+
+.modal-title.mainPopup{
+    font-weight: bold;
+}
+
+#closePopupMane{
+    opacity: 1;
+}

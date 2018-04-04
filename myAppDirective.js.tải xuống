@@ -1,0 +1,462 @@
+/**
+ * Created by vtlan on 3/22/2017.
+ */
+
+myApp.directive('myBackgroundImage', function () {
+    return function (scope, element, attrs) {
+        var url = attrs.myBackgroundImage;
+        element.css({
+            'background-image': 'url(' + url + ')',
+            'background-repeat': 'no-repeat',
+            'background-position': 'center center',
+            'border': '1px solid #0C0C0C',
+            'background-color': 'white'
+        });
+    };
+});
+myApp.directive('keyFocus', function () {
+    return {
+        link: function (scope, elem, attrs) {
+            elem.bind('keydown', function (e) {
+                // up arrow
+                var current = parseInt($(e.target).attr("key-focus"));
+                var next = current;
+
+                if (e.keyCode == 38) {
+                    // up
+                    next = current - 1;
+                }
+                else if (e.keyCode == 40) {
+                    // down
+                    next = current + 1
+                }
+                else if (e.keyCode == 39) {
+                    if (scope.editable) {
+                        var value = 1
+                        if (scope.facture[mappingPointage(current)] == 1) {
+                            value = 0;
+                        }
+
+                        scope.facture[mappingPointage(current)] = value;
+                        $("[index-pointage=" + current + "]").css({'background-image': 'url(' + pointageImgUrl(value) + ')'})
+                    }
+                    // right
+
+                }
+                else if (e.keyCode == 37) {
+                    // left
+                    if (scope.editable) {
+                        var value = 2
+                        if (scope.facture[mappingPointage(current)] == 2) {
+                            value = 0;
+                        }
+                        scope.facture[mappingPointage(current)] = value
+                        $("[index-pointage=" + current + "]").css({'background-image': 'url(' + pointageImgUrl(value) + ')'})
+                    }
+                }
+
+
+                if (next >= 1 && next <= 14) {
+                    setFocusInputByIndex(next);
+                }
+            });
+        }
+    };
+});
+myApp.directive('pointageValue', function () {
+    return {
+        link: function (scope, elem, attrs) {
+            var value = $(elem).attr("pointage-value")
+            $(elem).css({'background-image': 'url(' + pointageImgUrl(value) + ')'})
+        }
+    };
+});
+myApp.directive('compileTemplate', function ($compile, $parse) {
+    return {
+        link: function (scope, element, attr) {
+            var parsed = $parse(attr.ngBindHtml);
+
+            function getStringValue() {
+                return (parsed(scope) || '').toString();
+            }
+
+            //Recompile if the template changes
+            scope.$watch(getStringValue, function () {
+                $compile(element, null, -9999)(scope);  //The -9999 makes it skip directives so that we do not recompile ourselves
+            });
+        }
+    }
+});
+myApp.directive('modal', function () {
+    return {
+        template: '<div class="modal fade">' +
+        '<div class="modal-dialog">' +
+        '<div class="modal-content">' +
+        '<div class="modal-header">' +
+        '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>' +
+        '<h4 class="modal-title">Select a Site</h4>' +
+        '</div>' +
+        '<div class="modal-body" ng-transclude></div>' +
+        '</div>' +
+        '</div>' +
+        '</div>',
+        restrict: 'E',
+        transclude: true,
+        replace: true,
+        scope: true,
+        link: function postLink(scope, element, attrs) {
+            scope.title = attrs.title;
+
+            scope.$watch(attrs.visible, function (value) {
+                if (value == true)
+                    $(element).modal('show');
+                else
+                    $(element).modal('hide');
+            });
+
+            $(element).on('shown.bs.modal', function () {
+                scope.$apply(function () {
+                    scope.$parent[attrs.visible] = true;
+                });
+            });
+
+            $(element).on('hidden.bs.modal', function () {
+                scope.$apply(function () {
+                    scope.$parent[attrs.visible] = false;
+                });
+            });
+        }
+    };
+});
+
+myApp.factory('Language', function () {
+
+    var languageFile = {
+        "fr": {
+            "status": "Statut",
+            "n_de_facture": "N&deg; de facture",
+            "founisser": "Fournisseur",
+            "site": "Nom du site rattach\u00E9",
+            "date_de_facture": "Date de facture",
+            "consommation_totale": "Consommation totale",
+            "montant_ttc": "Montant TTC (\u20AC)",
+            "montant_ht": "Montant HT (\u20AC)",
+            "cout_abonnement": "Co&ucirc;t abonnement (\u20AC)",
+            "cout_acheminement": "Co&ucirc;t acheminement (\u20AC)",
+            "cout_consommation": "Co&ucirc;t Consommation (\u20AC)",
+            "cout_taxes": "Co&ucirc;t Taxes (\u20AC)",
+            "fluide": "Fluide",
+            "date_d_ajout": "Date d'ajout",
+            "date_de_debut": "Date de d\u00E9but de facturation",
+            "date_de_fin": "Date de fin de facturation",
+            "ref_client": "R\u00E9f\u00E9rence client",
+            "ref_contract": "R\u00E9f\u00E9rence contrat",
+            "invariant": "Point de livraison",
+            "puissance": "Puissance",
+            "exporter": "Exporter",
+            "champs_a_afficher": "Champs &agrave; afficher",
+            "trier": "Trier",
+            "filtres": "Filtres",
+            "valider": "Valider",
+            "sort_az": "Triez du plus petit au plus grand",
+            "sort_za": "Triez du plus grand au plus petit",
+            "list_facture": "Factures enregistr&eacute;es",
+            "type_facture": "Type de factures",
+            "affichage": "Affichage",
+            "page": "Page",
+            "compteur": "N&deg; Compteur",
+            "releve": "Relev\u00E9 ?"
+        },
+        "en": {
+            "status": "Status",
+            "n_de_facture": "N&deg; de facture",
+            "founisser": "Fournisseur",
+            "site": "Nom du site rattach\u00E9",
+            "date_de_facture": "Date de facture",
+            "consommation_totale": "Consommation totale",
+            "montant_ttc": "Montant TTC (\u20AC)",
+            "montant_ht": "Montant HT (\u20AC)",
+            "cout_abonnement": "Coût abonnement (\u20AC)",
+            "cout_acheminement": "Coût acheminement (\u20AC)",
+            "cout_consommation": "Coût Consommation (\u20AC)",
+            "cout_taxes": "Coût Taxes (\u20AC)",
+            "fluide": "Fluide",
+            "date_d_ajout": "Date d'ajout",
+            "date_de_debut": "Invoice start date",
+            "date_de_fin": "Invoice end date",
+            "ref_client": "Reference client",
+            "ref_contract": "Reference contract",
+            "invariant": "Invariant",
+            "puissance": "Puissance",
+            "exporter": "Exporter",
+            "champs_a_afficher": "Champs &agrave; afficher",
+            "trier": "Trier",
+            "filtres": "Filtres",
+            "valider": "Valider",
+            "sort_az": "Triez du plus petit au plus grand",
+            "sort_za": "Triez du plus grand au plus petit",
+            "list_facture": "Factures enregistr&eacute;es",
+            "type_facture": "Type de factures",
+            "affichage": "Affichage",
+            "page": "Page",
+            "compteur": "Compteur number",
+            "releve": "Real ?"
+        }
+    };
+
+    var defaultLanguage = "fr";
+    var currentLanguage = lang;
+
+    function get(key, language) {
+        try {
+            var currentLang = getCurrentLanguage(language);
+            var str = languageFile[currentLang][key];
+            return str;
+        } catch (e) {
+            return "Unknown text";
+        }
+    };
+
+    function getCurrentLanguage() {
+        try {
+            if (language) {
+                if (languageFile[language]) {
+                    currentLanguage = language;
+                } else {
+                    return defaultLanguage;
+                }
+            }
+        } catch (e) {
+        }
+        return currentLanguage;
+    };
+
+    function setLanguage(language) {
+        if (language) {
+            currentLanguage = language;
+        }
+    };
+
+    function getLanguage() {
+        return currentLanguage;
+    };
+    // PUBLIC METHODS DEFINITION
+    return {
+        get: get,
+        getLanguage: getLanguage,
+        setLanguage: setLanguage
+    };
+});
+
+myApp.directive("language", ['Language', function (Language) {
+
+    return {
+        restrict: 'A',
+        scope: {
+            key: "@",
+            message: "="
+        },
+        link: function (scope, element, attrs) {
+            var text = "";
+            if (scope.key) {
+                text = Language.get(scope.key);
+            } else if (scope.message) {
+                text = Language.get(scope.message);
+            }
+            $(element).html(text);
+        }
+    };
+
+}]);
+
+//bind event click outside --> hide
+myApp.directive("outsideClick", ['$document', '$parse', function ($document, $parse) {
+    return {
+        link: function ($scope, $element, $attributes) {
+
+            var scopeExpression = $attributes.outsideClick,
+                onDocumentClick = function (event) {
+
+                    // check for flag
+                    if (!$scope.closeFlag) {
+                        $scope.closeFlag = true;
+                        return;
+                    }
+
+                    var parent = event.target;
+
+                    while (parent && parent !== $element[0]) {
+                        parent = parent.parentNode;
+                    }
+
+                    if (!parent) {
+                        $scope.$apply(scopeExpression);
+                    }
+                }
+
+            $document.on("click", onDocumentClick);
+
+            $element.on('$destroy',
+                function () {
+                    $document.off("click",
+                        onDocumentClick);
+                });
+        }
+    }
+}]);
+//compile html
+myApp.directive('compile', ['$compile', function ($compile) {
+    return function (scope, element, attrs) {
+        scope.$watch(
+            function (scope) {
+                // watch the 'compile' expression for changes
+                return scope.$eval(attrs.compile);
+            },
+            function (value) {
+                // when the 'compile' expression changes
+                // assign it into the current DOM
+                element.html(value);
+                // compile the new DOM and link it to the current
+                // scope.
+                // NOTE: we only compile .childNodes so that
+                // we don't get into infinite loop compiling ourselves
+                $compile(element.contents())(scope);
+            }
+        );
+    };
+}]);
+
+myApp.directive('input', ['$parse', function ($parse) {
+    return {
+        restrict: 'E',
+        require: '?ngModel',
+        link: function (scope, element, attrs) {
+            if (attrs.value && attrs.ngModel) {
+                $parse(attrs.ngModel).assign(scope, attrs.value);
+            }
+        }
+    };
+}]);
+
+myApp.directive("reattachEvent", ['$compile', function ($compile) {
+    return {
+        restrict: 'A',
+        link: function (scope, element, attrs) {
+            $element = $(element).find(".popUpFilter");
+            if (typeof $element === "object" && $element.length > 0) {
+                $eComplie = $element.find("[data-to-compile]");
+                if (typeof $eComplie === "object" && $eComplie.length > 0) {
+                    var value = scope[$eComplie.attr("data-to-compile")];
+                    $eComplie.html(value);
+                    $compile($element)(scope);
+                }
+            }
+        }
+    };
+}]);
+
+myApp.directive("moveBackdrop", ['$timeout', function ($timeout) {
+    return {
+        restrict: 'A',
+        scope: true,
+        controller: function ($scope, $element) {
+            $scope.click = function () {
+                $timeout(function () {
+                    $('.modal-backdrop').appendTo("#content");
+                }, 0);
+            }
+        }
+    };
+}]);
+myApp.directive("moveBackdropPerformance", ['$timeout', function ($timeout) {
+    return {
+        restrict: 'A',
+        scope: true,
+        controller: function ($scope, $element) {
+            $scope.openPopupPerformance = function () {
+                $timeout(function () {
+                    $('.modal-backdrop').appendTo("#page-content-wrapper");
+                }, 0);
+            }
+        }
+    };
+}]);
+
+myApp.directive('initBind', function ($compile, $timeout) {
+    return {
+        restrict: 'A',
+        link: function (scope, element, attr) {
+            attr.$observe('ngBindHtml', function () {
+                if (attr.ngBindHtml) {
+                    $timeout(function () {
+                        $compile(element[0].children)(scope);
+                    })
+                }
+            })
+        }
+    };
+})
+
+myApp.directive('afterRender', ['$timeout', function ($timeout) {
+    var def = {
+        restrict: 'A',
+        terminal: true,
+        transclude: false,
+        link: function (scope, element, attrs) {
+            $timeout(scope.$eval(attrs.afterRender), 0);  //Calling a scoped method
+        }
+    };
+    return def;
+}]);
+
+myApp.directive('countrySelect', ["$parse", function ($parse) {
+    return {
+        restrict: 'A',
+        require: 'ngModel',
+        link: function (scope, elem, attrs, ngModelCtrl) {
+            if (!!attrs.ngModel) {
+                scope.$watch(attrs.ngModel, function (country) {
+                    elem.val(country);
+                });
+
+                var val = ngModelCtrl.$viewValue;
+                $(elem).countrySelector({value: val, codeMode: "alpha2"});
+
+            }
+
+        }
+    };
+}]);
+
+myApp.filter("decodeHTML", function () {
+    return function (item) {
+        item = $($("#encodeHTML").html(item)).text();
+        return item;
+    }
+});
+myApp.directive('myEnter', function () {
+    return function (scope, element, attrs) {
+        element.bind("keydown keypress", function (event) {
+            if (event.which === 13) {
+                // scope.$apply(function (){
+                //     scope.$eval(attrs.myEnter);
+                // });
+                // element.blur();
+                event.preventDefault();
+            }
+        });
+    };
+});
+myApp.directive('checkImage', function ($http) {
+    return {
+        restrict: 'A',
+        link: function (scope, element, attrs) {
+            attrs.$observe('ngSrc', function (ngSrc) {
+                $http.get(ngSrc).success(function () {
+                }).error(function () {
+                    element.attr('src', '../assets/images/logo/energisme/logo-pam.png'); // set default image
+                });
+            });
+        }
+    };
+});

@@ -1,0 +1,1254 @@
+/**
+ * Created by nxhung on 8/2/2017.
+ */
+var userBO = null;
+var userBORaw = null;
+var MSG_DUPLICATE_EMAIL = "ERROR: DUPPLICATE EMAIL";
+var iframeAddress = '';
+var language = '';
+// a Kien code
+
+function OpenMenuProfile(control) {
+    var idDropBoxStatus = $('#' + control.id).parent().children('.dropdown-content-profile').css("display");
+    if (idDropBoxStatus == "none") {
+        $('#' + control.id).parent().children('.dropdown-content-profile').css('display', 'block');
+        $('#' + control.id).parent().children('.arrow-drop-box').children('.top-arrow-drop-box').css('display', 'block');
+        $('#' + control.id).parent().children('.arrow-drop-box').children('.bottom-arrow-drop-box').css('display', 'block');
+    } else {
+        $('#' + control.id).parent().children('.dropdown-content-profile').css('display', 'none');
+        $('#' + control.id).parent().children('.arrow-drop-box').children('.top-arrow-drop-box').css('display', 'none');
+        $('#' + control.id).parent().children('.arrow-drop-box').children('.bottom-arrow-drop-box').css('display', 'none');
+    }
+    ajaxRetrieveUserLogin();
+}
+
+function clickDocumentListener() {
+    $(document).click(function (e) {
+        if (!$(e.target).hasClass("not-close-drop-box")) {
+            closePopupUser();
+        }
+
+        if (!$(e.target).hasClass("not-close-dropdown-language")) {
+            closePopupLanguage();
+        }
+
+
+        try {
+            if(typeof ($('iframe')[0]) != undefined ) {
+                var iframeN = $('iframe')[0];
+                iframeAddress = $(iframeN).attr("src");
+
+                var valueIframe = document.getElementsByTagName('iframe')[0];
+                // if (valueIframe && $('#function-user').hasClass('active-func'))
+                valueIframe.contentWindow.postMessage('Close popup dropdownSearch', iframeAddress);
+            }
+        }
+        catch(err) {
+
+        }
+
+    });
+}
+
+// function closePopup() {
+//     $(document).click(function (e) {
+//
+//     });
+// }
+window.addEventListener('message',function(e) {
+    var key = e.message ? 'message' : 'data';
+    var data = e[key];
+    if(data == "Close popup user"){
+        closePopupUser();
+    }else if(data == "show popup access deny"){
+        angular.element('#wrapper').scope().showPopupMain001();
+    }
+
+//    remove User current
+    if (typeof data == 'object') {
+        for (var i in data) {
+            var userId = data[i];
+            try {
+                if (userId == userBO.userId) {
+                    logOut();
+                    break;
+                }
+            }
+            catch(err) {
+
+            }
+        }
+    }
+},false);
+
+function closePopupUser() {
+    if ($('.dropdown-content-profile:visible').length > 0) {
+        $('.dropdown-content-profile').css('display', 'none');
+        $('.top-arrow-drop-box').css('display', 'none');
+        $('.bottom-arrow-drop-box').css('display', 'none');
+    }
+}
+
+function showDropdownLanguage() {
+    if($(".collapse-img-dropdown").hasClass("hide")){
+        $(".collapse-img-dropdown").removeClass("hide");
+    }else {
+        $(".collapse-img-dropdown").addClass("hide");
+    }
+}
+
+function closePopupLanguage(){
+    $(".collapse-img-dropdown").addClass("hide");
+}
+
+var arraylanguage = ["French","English","Italian","Spanish"];
+
+function drawSelectLanguage() {
+    html='';
+    for(var i=0; i<arraylanguage.length; i++){
+        html+= '<div class="cell-language not-close-dropdown-language not-close-drop-box isPointer" onclick="selectLanguage(this)">';
+        html+= '<div class="cell-language-flag not-close-dropdown-language not-close-drop-box"><img  class="img-flag not-close-dropdown-language not-close-drop-box" src="../assets/images/userProfile/flag-' +arraylanguage[i]+ '.png" ></div>';
+        html+= '<div class="cell-language-text not-close-dropdown-language not-close-drop-box">' + arraylanguage[i] + '</div>';
+        html+= '</div>';
+    }
+
+    $(".collapse-img-dropdown").append(html);
+
+}
+function selectLanguage(control) {
+    language = $(control).children(".cell-language-text")[0].textContent;
+    $(".collapse-img-flag").attr("src","../assets/images/userProfile/flag-"+ language +".png");
+
+    closePopupLanguage();
+
+    var url = "switchLangugeOfUser.action?language="+language;
+    $.ajax({
+        url: url,
+        type: "GET",
+        success: function (data, textStatus, jqXHR) {
+            reloadPage();
+            $(".collapse-img-flag").attr("src","../assets/images/userProfile/flag-"+ language +".png")
+        }
+    });
+
+}
+
+
+function reloadPage() {
+    location.reload();
+}
+
+
+function showUserModify(control) {
+    closePopupUser();
+    $(".rdoSlide.pwd.uncheck-csm").click();
+    bindDataFormUser(userBO);
+    showFormUser();
+}
+
+function hideFormUser() {
+    $('.wrap-user-modify').hide();
+    $(".colorPickSelector1").css({'backgroundColor': valueIcoColor});
+
+    hideBackdropUser();
+}
+
+function showFormUser() {
+    $('.wrap-user-modify').show();
+    showBackdropUser();
+}
+
+function bindDataDialogUser(data) {
+    var fname = userBO.field.prenom;
+    var lname = userBO.field.nom;
+    var login = userBO.userId;
+    var phone = userBO.field.phone;
+    var mail = userBO.field.email;
+    var name;
+
+    name = fname + " " + lname;
+
+    if (typeof fname != 'undefined') {
+        firstcharfname = fname.charAt(0);
+        // firstcharlname = lname.charAt(0).toUpperCase();
+        firstcharlname = lname.charAt(0);
+        $('.div-image')[0].innerHTML = '<div class="not-close-drop-box" style="position: absolute; top: 9px; left:9px">'+firstcharfname + firstcharlname + '</div>';
+        $('.div-image-dropbox')[0].innerHTML = firstcharfname + firstcharlname;
+
+    }
+    if (typeof fname != 'undefined' && typeof lname != 'undefined') {
+        $('.name')[0].innerHTML = name;
+    }
+    if (typeof phone != 'undefined') {
+        phone = phone.replace(/\s/g, '');
+        // var newphone = '' ;
+        // for(var i = 1; i<phone.length+1; i++){
+        //     newphone = newphone + phone.charAt(i-1);
+        //     if(i%2==0){
+        //         newphone = newphone + ' ';
+        //     }
+        // }
+        // $('.phone')[0].innerHTML = newphone;
+        $('.phone')[0].innerHTML = phone;
+    }else {
+        $('.phone')[0].innerHTML = "";
+    }
+    if (typeof mail != 'undefined') {
+        $('.email')[0].innerHTML = mail;
+    }
+}
+
+function logOut() {
+    window.location.href = "logout";
+    // var url = "logout.action";
+    // $.ajax({
+    //     url: url,
+    //     type: "GET",
+    //     async: true,
+    //     before: function () {
+    //     },
+    //     success: function () {
+    //         reloadPage();
+    //     }
+    // });
+}
+
+function popupConfirmLogOut() {
+    var s = confirm('voulez-vous vraiment vous déconnecter');
+    if(s){
+        logOut();
+    }
+}
+
+function createTooltip(control, position, title) {
+    $(control).attr('data-toggle', 'tooltip');
+    $(control).attr('data-placement', position);
+    $(control).attr('data-original-title', title);
+    setTimeout(function(){
+        try{
+            $(control).tooltip();
+        }catch(err){
+        }
+    })
+}
+
+function cssTooltipRW(ctl, e) {
+    var tooltip = $(ctl).next('.tooltip.in');
+    if ($(window).width() <= 1148) {
+        $(tooltip).css({left: '279.009px'});
+        $(tooltip).children('.tooltip-arrow').css({left: '50%'});
+    }
+}
+
+function cssTooltipRW2(ctl, e) {
+    var tooltip = $(ctl).next('.tooltip.in');
+    if ($(window).width() <= 1148) {
+        $(tooltip).css({left: '215.009px'});
+        $(tooltip).children('.tooltip-arrow').css({left: '50%'});
+    }
+}
+
+function cssTooltipRW3(ctl, e) {
+    var tooltip = $(ctl).next('.tooltip.in');
+    if ($(window).width() <= 960) {
+        if(browserCurrent == "Internet Explorer"){
+            $(tooltip).css({top: '315.009px'});
+        }else{
+            $(tooltip).css({top: '335.009px'});
+        }
+
+        $(tooltip).css({left: '394px'});
+        $(tooltip).children('.tooltip-arrow').css({left: '50%'});
+    }
+}
+
+function cssTooltipRW4(ctl, e) {
+    var tooltip = $(ctl).next('.tooltip.in');
+    if ($(window).width() <= 960) {
+        if(browserCurrent == "Internet Explorer"){
+            $(tooltip).css({top: '358.009px'});
+        }else{
+            $(tooltip).css({top: '378.5px'});
+        }
+
+        $(tooltip).css({left: '396.009px'});
+        $(tooltip).children('.tooltip-arrow').css({left: '50%'});
+    }
+}
+
+// hungnx code
+function checkRadioSlideCSM(control) {
+    var chk = $(control).find('input[type="checkbox"]');
+    if ($(control).hasClass('uncheck-csm')) {
+        $(control).removeClass('uncheck-csm');
+    } else {
+        $(control).addClass('uncheck-csm');
+    }
+    if (chk.prop('checked')) {
+        uncheckedSlideRadio(control);
+        chk.prop('checked', false);
+        cssChooseNoRadio(control);
+        hideFormChangePass();
+        $('.info-basic-user').addClass('center-layout');
+    } else {
+        checkedSlideRadio(control);
+        chk.prop('checked', true);
+        cssChooseYesRadio(control);
+        $('.input-pass').val('');
+        $(".input-pass").not('.field-empty').addClass('field-empty');
+        // enableBtnSaveUser();
+        showFormChangePass();
+        $('.info-basic-user.center-layout').removeClass('center-layout');
+    }
+    checkForShowBtnSaveUser();
+}
+function checkedSlideRadio(control) {
+    $(control).find('.wrapper-btn-rdo').animate({
+        'left': '0'
+    }, 200);
+}
+function uncheckedSlideRadio(control) {
+    $(control).find('.wrapper-btn-rdo').animate({
+        'left': '25px'
+    }, 200);
+}
+function cssChooseYesRadio(control) {
+    $(control).closest(".rdo-cp").find(".lbl-no").addClass("disabled");
+    $(control).closest(".rdo-cp").find(".lbl-yes").removeClass("disabled");
+}
+function cssChooseNoRadio(control) {
+    $(control).closest(".rdo-cp").find(".lbl-yes").addClass("disabled");
+    $(control).closest(".rdo-cp").find(".lbl-no").removeClass("disabled");
+}
+function bindDataFormUser(data) {
+    refreshFieldUser();
+    var fname = (typeof data.field.prenom == 'undefined') ? '' : data.field.prenom;
+    var lname = (typeof data.field.nom == 'undefined') ? '' : data.field.nom;
+    var login = data.userId;
+    var phone = (typeof data.field.phone == 'undefined') ? '' : data.field.phone;
+    var mail = (typeof data.field.email == 'undefined') ? '' : data.field.email;
+    var fullName = (fname.charAt(0) + lname.charAt(0) == '') ? '' : fname.charAt(0) + lname.charAt(0);
+    $(".input-user.fname").val(fname);
+    $(".input-user.fname").attr('oldValue', fname);
+    $(".input-user.fname").attr('field', 'field.prenom');
+    $(".input-user.lname").val(lname);
+    $(".input-user.lname").attr('oldValue', lname);
+    $(".input-user.lname").attr('field', 'field.nom');
+    $(".input-user.login").val(login);
+    $(".input-user.login").attr('oldValue', login);
+    $(".input-user.login").attr('field', 'userId');
+    $(".input-user.phone").val(phone);
+    $(".input-user.phone").attr('oldValue', phone);
+    $(".input-user.phone").attr('field', 'field.phone');
+    $(".input-user.mail").val(mail);
+    $(".input-user.mail").attr('oldValue', mail);
+    $(".input-user.mail").attr('field', 'field.email');
+    $(".icon-um").html(fullName);
+}
+function refreshFieldUser() {
+    $('.input-pass').val('');
+    $('.input-user').val('');
+    $(".input-pass").not('.field-empty').addClass('field-empty');
+    $('.input-user.field-empty').removeClass('field-empty');
+    $('.editing').removeClass("editing");
+    disableBtnSaveUser();
+}
+function enableBtnSaveUser() {
+    $(".img-save-user").attr('src', '../assets/images/userProfile/ico-circle-validate.png');
+    $(".btn-save-user.disabled").removeClass('disabled');
+}
+function disableBtnSaveUser() {
+    $(".img-save-user").attr('src', '../assets/images/userProfile/validateInactive.png');
+    $(".btn-save-user").not(".disabled").addClass('disabled');
+}
+var etatChangeUserInfo = false;
+function editInfoUser(control, evt) {
+    var oldValue = $(control).attr('oldValue');
+    var newValue = $(control).val();
+    if (oldValue != newValue) {
+        $(control).not('.editing').addClass('editing');
+    } else {
+        $(control).removeClass('editing');
+    }
+
+
+
+    if(newValue != "") {
+        if($(control).hasClass("phone")){
+            if (validPhone(newValue)) {
+                $(control).removeClass('field-empty');
+            } else {
+                $(control).not('.field-empty').addClass('field-empty');
+            }
+
+        }else if($(control).hasClass("mail")){
+            if (!validateEmail(newValue) || newValue.length > 100) {
+                $(control).addClass('field-empty');
+            } else {
+                $(control).removeClass('field-empty');
+            }
+        }else{
+            $(control).removeClass('field-empty');
+        }
+
+    }else {
+        if($(control).hasClass("phone")){
+            $(control).removeClass('field-empty');
+        }else{
+            $(control).addClass('field-empty');
+        }
+    }
+
+    checkForShowBtnSaveUser();
+
+
+    // if ($('.editing').length > 0) {
+    //     etatChangeUserInfo = true;
+    //     enableBtnSaveUser();
+    // } else {
+    //     etatChangeUserInfo = false;
+    //     if(!etatChangeIcoColor) {
+    //         disableBtnSaveUser();
+    //     }
+    // }
+}
+
+function parseDataToDS2(data) {
+    var objdata = JSON.parse(data);
+    var objUser = {};
+    try{
+        objUser.field = {};
+        objUser.userId = objdata["user.login"];
+        objUser.partnerId = objdata["relation"]["partner"];
+        objUser.userName = objdata["user.first_name"] +" "+ objdata["user.last_name"];
+        objUser.field.email = objdata["user.email"];
+        objUser.field.nom = objdata["user.last_name"];
+        objUser.field.phone = objdata["user.office_phone"];
+        objUser.field.prenom = objdata["user.first_name"];
+        objUser.field.profil = objdata["user.profile"];
+        objUser.field.source = objdata["user.userLogin"];
+        objUser.field.pass = objdata["user.password_hash"];
+        objUser.field.icoColor = objdata["user.ico_color"];
+    }catch (e){
+    }
+    return objUser;
+}
+var valueIcoColor ='';
+function ajaxRetrieveUserLogin() {
+    // $(".brand-img-profile").css("display", "none");
+    var url = "retrieveUserByLogin.action";
+    $.ajax({
+        url: url,
+        type: "GET",
+        async: true,
+        before: function () {
+            // $("#page-loading").show();
+        },
+        success: function (data, textStatus, jqXHR) {
+            // setTimeout(function () {
+            data = parseDataToDS2(data);
+            userBO = data;
+            userBORaw = JSON.parse(JSON.stringify(userBO));
+            if(typeof userBO.field != "undefined" && typeof userBO.field.icoColor != "undefined" && userBO.field.icoColor != ""){
+                valueIcoColor =userBO.field.icoColor;
+            }else{
+                // valueIcoColor ='#485B70';
+                valueIcoColor = $("#colorPartner").val();
+            }
+            valueIcoColorCurrent = valueIcoColor;
+            $(".colorPickSelector1").css({'backgroundColor': valueIcoColor});
+            bindDataFormUser(data);
+            bindDataDialogUser(data);
+            // $(".brand-img-profile").css("display", "block");
+            // }, 2000)
+        },
+        error: function (msg) {
+            // $("#page-loading").fadeOut(100);
+        }
+    });
+}
+
+function ajaxUpdateUser(listFieldChange) {
+
+    userBO.field.icoColor = valueIcoColorCurrent;
+    listFieldChange.push("icoColor");
+    if(userBO.field.profil == "-1" ){
+        userBO.clientIdUI = "perial";
+    }else{
+        userBO.clientIdUI = $("#partnerId").val();
+    }
+
+    userBO.listFieldChangeUser = listFieldChange ;
+    userBO.profileIdUI = "fromLogoUser";
+    var stringObj = JSON.stringify (userBO);
+
+    $("#page-loading").show();
+    var url = "updateUserByLogin.action";
+    $.ajax({
+        url: url,
+        type: "POST",
+        data: JSON.stringify({objectStr:stringObj}),
+        async: true,
+        contentType: 'application/json',
+        dataType: 'JSON',
+        // processData: false,
+        before: function () {
+            $("#page-loading").show();
+        },
+        success: function (data, textStatus, jqXHR) {
+            data = JSON.parse(data);
+
+            if (data != null) {
+                if (data.success) {
+                    // $("#page-loading").hide();
+                    hideFormUser();
+                    ajaxRetrieveUserLogin();
+
+                    try {
+                        if(typeof ($('iframe')[0]) != undefined ) {
+                            // var userBOToSend = JSON.parse(JSON.stringify(userBO));
+                            var iframeN = $('iframe')[0];
+                            iframeAddress = $(iframeN).attr("src");
+
+                            var valueIframe = document.getElementsByTagName('iframe')[0];
+                            // if (valueIframe && $('#function-user').hasClass('active-func'))
+                            valueIframe.contentWindow.postMessage(userBO, iframeAddress);
+                        }
+                    }
+                    catch(err) {
+
+                    }
+
+                } else {
+                    userBO = JSON.parse(JSON.stringify(userBORaw));
+                    if (data.description == MSG_DUPLICATE_EMAIL) {
+                        //red border that field
+                        $('.input-user.mail').addClass('field-empty');
+                    } else {
+                        console.log('update user error: ' + data);
+                    }
+                }
+            }
+            $(".btn-save-user.clicked").removeClass('clicked');
+            $("#page-loading").hide();
+        },
+        error: function (msg) {
+            userBO = JSON.parse(JSON.stringify(userBORaw));
+            $("#page-loading").hide();
+            console.log("update user failed-- "+msg);
+        }
+    });
+}
+function validPhone(phone){
+    var arr = phone.split("");
+    var isValid =true;
+    var countNumber = 0;
+    for(var i =0; i<arr.length;i++){
+        if(arr[i]==" ")
+            continue;
+        if(!isNaN(arr[i])){
+            countNumber++;
+        }
+    }
+    if(countNumber<10 || countNumber>15){
+        // $(control).addClass("empty-field");
+        isValid = false;
+    }
+    var regexPhone = /^[ +()0-9]+$/;
+    if(!regexPhone.test(phone)){
+        isValid = false;
+    }
+    return isValid;
+}
+function validPassword(pwd) {
+    var isValid = false;
+    var regexPhone = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d!@#$&()-`.+,/\"]{8,}$/;
+    if (regexPhone.test(pwd))
+        isValid = true;
+    return isValid;
+}
+function validateEmail(email) {
+    var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(email);
+}
+function saveUserListener(control) {
+    var listFieldChange = [];
+
+    if ($(control).hasClass('disabled') || $(control).hasClass('clicked'))
+        return;
+    $(control).addClass('clicked');
+    var listFieldUser = $(".input-user").not('.option');
+    var phone = $(".input-user.option").val();
+    if (phone != '') {
+        if (validPhone(phone)) {
+            $(".input-user.option.field-empty").removeClass('field-empty');
+        } else {
+            $(".input-user.option").not('.field-empty').addClass('field-empty');
+        }
+    } else {
+        $(".input-user.option.field-empty").removeClass('field-empty');
+    }
+    for (var i=0; i<listFieldUser.length; i++) {
+        var newValue = $(listFieldUser[i]).val();
+        if (newValue == '') {
+            $(listFieldUser[i]).addClass('field-empty');
+        } else {
+            $(listFieldUser[i]).removeClass('field-empty');
+        }
+        var field = $(listFieldUser[i]).attr('field');
+        if (field.indexOf('field') > -1) {
+            var splitField = field.split('.');
+            if (splitField.length > 1) {
+                if (splitField[1] == 'email') {
+                    if (!validateEmail(newValue) || newValue.length > 100) {
+                        $(listFieldUser[i]).addClass('field-empty');
+                    } else {
+                        $(listFieldUser[i]).removeClass('field-empty');
+                    }
+                }
+            }
+        }
+    }
+    var listEdit = $('.input-user').not('.field-empty');
+    for (var i=0; i<listEdit.length; i++) {
+        var field = $(listEdit[i]).attr('field');
+        if (typeof field == 'undefined') {
+            //field pwd
+        } else {
+            var newValue = $(listEdit[i]).val();
+            if (field.indexOf('field') > -1) {
+                var splitField = field.split('.');
+                if (splitField.length > 1) {
+                    userBO[splitField[0]][splitField[1]] = newValue;
+                    if($(listEdit[i]).hasClass("editing")){
+                        listFieldChange.push(splitField[1]);
+                    }
+                }
+            } else
+                userBO[field] = newValue;
+        }
+    }
+    //valid change pwd when enable change pwd
+    var isValidPass = false;
+    if ($('.rdoSlide.pwd.uncheck-csm').length > 0) {
+        var oldPass = $(".input-pass.old-pass").val();
+        oldPass = Sha256.hash(oldPass);
+        var newPass = $(".input-pass.new-pass").val();
+        var cfPass = $(".input-pass.confirm-pass").val();
+        if (newPass != cfPass || !validPassword(cfPass)) {
+            $(".input-pass.new-pass").not('field-empty').addClass('field-empty');
+            $(".input-pass.confirm-pass").not('field-empty').addClass('field-empty');
+        } else {
+            $(".input-pass.new-pass.field-empty").removeClass('field-empty');
+            $(".input-pass.confirm-pass.field-empty").removeClass('field-empty');
+            isValidPass = true;
+        }
+        if (oldPass != userBO.field.pass) {
+            $(".input-pass.old-pass").not('field-empty').addClass('field-empty');
+            isValidPass = false;
+        } else {
+            $(".input-pass.old-pass.field-empty").removeClass('field-empty');
+            isValidPass = true;
+        }
+    }
+    var fieldsEmpty = $('.field-empty');
+    if ($('.rdoSlide.pwd.uncheck-csm').length <= 0) {
+        fieldsEmpty = $('.field-empty').not('.input-pass');
+    }
+    if (fieldsEmpty.length <= 0) {
+        if (isValidPass) {
+            userBO.field.pass = newPass;
+            listFieldChange.push("pass");
+        }
+        ajaxUpdateUser(listFieldChange);
+        hideBackdropUser();
+    } else {
+        $(".btn-save-user.clicked").removeClass('clicked');
+    }
+}
+function showBackdropUser() {
+    $(".black-mask").addClass('enabled');
+}
+function hideBackdropUser() {
+    $(".black-mask").removeClass('enabled');
+}
+function showFormChangePass() {
+    $(".wrap-change-pass").show();
+}
+function hideFormChangePass() {
+    $(".wrap-change-pass").hide();
+}
+function changePasswordUser(control, evt) {
+
+    if(!$(control).hasClass("old-pass")){
+        if ($(control).val() == '') {
+            $(control).addClass('field-empty');
+        } else {
+
+            var newPass = $(".input-pass.new-pass").val();
+            var cfPass = $(".input-pass.confirm-pass").val();
+
+            if($(control).hasClass("new-pass")){
+                if(validPassword(newPass) && newPass != ""){
+                    $(control).removeClass('field-empty');
+                }else {
+                    $(control).addClass('field-empty');
+                }
+            }
+            if(validPassword(newPass) && cfPass == newPass){
+                $(".input-pass.confirm-pass").removeClass('field-empty');
+            }else {
+                $(".input-pass.confirm-pass").addClass('field-empty');
+            }
+        }
+    }
+
+
+    checkForShowBtnSaveUser();
+}
+
+
+$(function () {
+    clickDocumentListener();
+
+    createTooltip("#imgEdit", "top", "Editer mes informations");
+    createTooltip("#imgLogout", "top", "Se deconnecter");
+    createTooltip(".btn-np", "top", "Votre mot de passe doit comporter au minimum 8 caracteres dont au moins 1 chiffre et 1 lettre");
+    createTooltip(".btn-cp", "top", "Votre mot de passe doit comporter au minimum 8 caracteres dont au moins 1 chiffre et 1 lettre");
+    ajaxRetrieveUserLogin();
+    // addActionMouse();
+})
+
+
+
+var valueIcoColorCurrent = "";
+var etatChangeIcoColor = false;
+$(".colorPickSelector").colorPick({
+    'initialColor' : valueIcoColor,
+    'onColorSelected': function() {
+        // console.log("The user has selected the color: " + this.color)
+        // this.element.css({'backgroundColor': this.color, 'color': this.color});
+        // console.log(this.element[0]);
+        // console.log(this.element[0].className );
+        // var abc = this.element[0].className
+        if(this.color != "") {
+            $(".colorPickSelector1").css({'backgroundColor': this.color});
+            valueIcoColorCurrent = this.color;
+            if (valueIcoColor != this.color) {
+                etatChangeIcoColor = true;
+                enableBtnSaveUser();
+            } else {
+                etatChangeIcoColor = false;
+                if (!etatChangeUserInfo) {
+                    disableBtnSaveUser();
+                }
+            }
+        }
+        this.color = "";
+    }
+});
+
+
+$(document).ready(function() {
+    drawSelectLanguage();
+    // closePopup();
+    // $(".fname").focusin(function(){
+    //
+    // });
+
+    // checkInputUser();
+
+});
+
+// function checkInputUser() {
+//     $(".input-user.fname").focusout(function(){
+//         var newValue = $(".input-user.fname").val();
+//         var oldValue = $(".input-user.fname").attr('oldValue');
+//         if(newValue == "" ){
+//             $(".input-user.fname").addClass('field-empty');
+//             $(".input-user.fname").removeClass('editing');
+//         }else {
+//             $(".input-user.fname").removeClass('field-empty');
+//             if (oldValue != newValue) {
+//                 $(".input-user.fname").not('.editing').addClass('editing');
+//             } else {
+//                 if ($(".input-user.fname").hasClass('editing'))
+//                     $(".input-user.fname").removeClass('editing');
+//             }
+//         }
+//         checkForShowBtnSaveUser();
+//     });
+//
+//     $(".input-user.lname").focusout(function(){
+//         var newValue = $(".input-user.lname").val();
+//         var oldValue = $(".input-user.lname").attr('oldValue');
+//         if(newValue == "" ){
+//             $(".input-user.lname").addClass('field-empty');
+//             $(".input-user.lname").removeClass('editing');
+//         }else {
+//             $(".input-user.lname").removeClass('field-empty');
+//             if (oldValue != newValue) {
+//                 $(".input-user.lname").not('.editing').addClass('editing');
+//             } else {
+//                 if ($(".input-user.lname").hasClass('editing'))
+//                     $(".input-user.lname").removeClass('editing');
+//             }
+//         }
+//         checkForShowBtnSaveUser();
+//     });
+//
+//     $(".input-user.phone").focusout(function(){
+//         var newValue = $(".input-user.phone").val();
+//         var oldValue = $(".input-user.phone").attr('oldValue');
+//
+//         if(newValue != "") {
+//             if (oldValue != newValue) {
+//                 if (validPhone(newValue)) {
+//                     $(".input-user.option.field-empty").removeClass('field-empty');
+//                     $(".input-user.phone").not('.editing').addClass('editing');
+//
+//                 } else {
+//                     $(".input-user.option").not('.field-empty').addClass('field-empty');
+//                     $(".input-user.phone").removeClass('editing');
+//                 }
+//             } else {
+//                 $(".input-user.option.field-empty").removeClass('field-empty');
+//                 if ($(".input-user.phone").hasClass('editing'))
+//                     $(".input-user.phone").removeClass('editing');
+//             }
+//         }else{
+//             $(".input-user.option.field-empty").removeClass('field-empty');
+//             if (oldValue != newValue) {
+//                 $(".input-user.phone").not('.editing').addClass('editing');
+//             }else {
+//                 $(".input-user.phone").removeClass('editing');
+//             }
+//         }
+//         checkForShowBtnSaveUser();
+//     });
+//
+//     $(".input-user.mail").focusout(function(){
+//         var newValue = $(".input-user.mail").val();
+//         var oldValue = $(".input-user.mail").attr('oldValue');
+//         if(newValue == "" ){
+//             $(".input-user.mail").addClass('field-empty');
+//             $(".input-user.mail").removeClass('editing');
+//         }else {
+//                 if (!validateEmail(newValue) || newValue.length > 100) {
+//                     $(".input-user.mail").addClass('field-empty');
+//                 } else {
+//                     $(".input-user.mail").removeClass('field-empty');
+//                 }
+
+//             if (oldValue != newValue) {
+//                 $(".input-user.mail").not('.editing').addClass('editing');
+//             } else {
+//                 if ($(".input-user.mail").hasClass('editing'))
+//                     $(".input-user.mail").removeClass('editing');
+//             }
+//         }
+//         checkForShowBtnSaveUser();
+//     });
+//
+// }
+
+function checkForShowBtnSaveUser() {
+
+    var validPass = true;
+    if($('.rdoSlide').find('input[type="checkbox"]').prop('checked')){
+        if($(".input-pass.confirm-pass").hasClass('field-empty')
+            || $(".input-pass.new-pass").hasClass('field-empty')
+        ){
+            validPass = false;
+        }
+    }
+
+
+    if(!$(".input-user").hasClass("field-empty")){
+        if($(".input-user").hasClass("editing") && validPass){
+            etatChangeUserInfo = true;
+            enableBtnSaveUser();
+        }else{
+            if($('.rdoSlide').find('input[type="checkbox"]').prop('checked') && validPass) {
+                etatChangeUserInfo = true;
+                enableBtnSaveUser();
+            }else {
+                etatChangeUserInfo = false;
+                if(!etatChangeIcoColor) {
+                    disableBtnSaveUser();
+                }
+            }
+
+        }
+
+    }else{
+        etatChangeUserInfo = false;
+        disableBtnSaveUser();
+    }
+
+}
+
+
+
+$(window).resize(function () {
+
+});
+
+// *************************************************************************************************************
+/**
+ * M2M_detect_browser v1.0 | (c) M2M Team
+ */
+function M2M_detect_browser(){
+    this.CHROME = 'Chrome';
+    this.FIREFOX = 'Firefox';
+    this.OPERA = 'Opera';
+    this.IE = 'Internet Explorer';
+    this.SAFARI = 'Safari';
+    this.MAXTHON = 'Maxthon';
+    this.COCCOC = 'Coc Coc';
+    this.UNKNOWN = 'unknown';
+
+    this.browser = {
+        name: '',
+        version: ''
+    }
+    this.detectBrowserInfo();
+}
+
+M2M_detect_browser.prototype.detectBrowserInfo = function(){
+
+    var nameResult = this.UNKNOWN;
+    var versionResult = this.UNKNOWN;
+
+    var userAgentStr = navigator.userAgent;
+
+    if (userAgentStr.indexOf("Chrome/") != -1 ) {
+        if(userAgentStr.indexOf("OPR/") != -1 ) {
+            nameResult = this.OPERA;
+            versionResult = this.detectBrowserVersion(userAgentStr, "OPR/");
+        } else if(userAgentStr.indexOf("Maxthon/") != -1 ) {
+            nameResult = this.MAXTHON;
+            versionResult = this.detectBrowserVersion(userAgentStr, "Maxthon/");
+        } else if(userAgentStr.indexOf("coc_coc_browser/") != -1 ) {
+            nameResult = this.COCCOC;
+            versionResult = this.detectBrowserVersion(userAgentStr, "coc_coc_browser/");
+        } else {
+            nameResult = this.CHROME;
+            versionResult = this.detectBrowserVersion(userAgentStr, "Chrome/");
+        }
+    } else if (userAgentStr.indexOf(".NET") != -1 || userAgentStr.indexOf("MSIE") != -1) {
+        nameResult = this.IE;
+        if (userAgentStr.indexOf("MSIE") < 0){
+            versionResult = this.detectBrowserVersion(userAgentStr, "rv:");
+        } else {
+            versionResult = this.detectBrowserVersion(userAgentStr, "MSIE ");
+        }
+    } else if (userAgentStr.indexOf("Firefox/") != -1 ) {
+        nameResult = this.FIREFOX;
+        versionResult = this.detectBrowserVersion(userAgentStr, "Firefox/");
+    } else if (userAgentStr.indexOf("Safari/") != -1) {
+        nameResult = this.SAFARI;
+        versionResult = this.detectBrowserVersion(userAgentStr, "Safari/");
+    } else {
+
+    }
+    this.browser.name = nameResult;
+    this.browser.version = versionResult;
+}
+
+M2M_detect_browser.prototype.detectBrowserVersion = function(agent_str,key_word){
+    var indexStart = agent_str.indexOf(key_word) + key_word.length;
+    var indexEnd = agent_str.length;
+    var versionResult = agent_str.substring(indexStart, indexEnd);
+    if(versionResult.indexOf(" ") >= 0){
+        versionResult = versionResult.substring(0,versionResult.indexOf(" "));
+    }
+    return versionResult.replace(/[^.\w\s]/gi, "");
+}
+
+var browserCurrent =  new M2M_detect_browser().browser.name;
+// *************************************************************************************************************
+
+
+
+
+
+
+
+// var n = new Date().getMilliseconds();
+// document.write(Sha256.hash('ab'));
+// var z = new Date().getMilliseconds();
+// document.write('<br/>');
+// document.write('Milliseconds: ');
+// document.write(z-n);
+// *************************************************************************************************************
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
+/*  SHA-256 implementation in JavaScript | (c) Chris Veness 2002-2010 | www.movable-type.co.uk    */
+/*   - see http://csrc.nist.gov/groups/ST/toolkit/secure_hashing.html                             */
+/*         http://csrc.nist.gov/groups/ST/toolkit/examples.html                                   */
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
+
+var Sha256 = {};  // Sha256 namespace
+
+/**
+ * Generates SHA-256 hash of string
+ *
+ * @param {String} msg                String to be hashed
+ * @param {Boolean} [utf8encode=true] Encode msg as UTF-8 before generating hash
+ * @returns {String}                  Hash of msg as hex character string
+ */
+Sha256.hash = function(msg, utf8encode) {
+    utf8encode =  (typeof utf8encode == 'undefined') ? true : utf8encode;
+
+    // convert string to UTF-8, as SHA only deals with byte-streams
+    if (utf8encode) msg = Utf8.encode(msg);
+
+    // constants [§4.2.2]
+    var K = [0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+        0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+        0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+        0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+        0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+        0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+        0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+        0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2];
+    // initial hash value [§5.3.1]
+    var H = [0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19];
+
+    // PREPROCESSING
+
+    msg += String.fromCharCode(0x80);  // add trailing '1' bit (+ 0's padding) to string [§5.1.1]
+
+    // convert string msg into 512-bit/16-integer blocks arrays of ints [§5.2.1]
+    var l = msg.length/4 + 2;  // length (in 32-bit integers) of msg + ‘1’ + appended length
+    var N = Math.ceil(l/16);   // number of 16-integer-blocks required to hold 'l' ints
+    var M = new Array(N);
+
+    for (var i=0; i<N; i++) {
+        M[i] = new Array(16);
+        for (var j=0; j<16; j++) {  // encode 4 chars per integer, big-endian encoding
+            M[i][j] = (msg.charCodeAt(i*64+j*4)<<24) | (msg.charCodeAt(i*64+j*4+1)<<16) |
+                (msg.charCodeAt(i*64+j*4+2)<<8) | (msg.charCodeAt(i*64+j*4+3));
+        } // note running off the end of msg is ok 'cos bitwise ops on NaN return 0
+    }
+    // add length (in bits) into final pair of 32-bit integers (big-endian) [§5.1.1]
+    // note: most significant word would be (len-1)*8 >>> 32, but since JS converts
+    // bitwise-op args to 32 bits, we need to simulate this by arithmetic operators
+    M[N-1][14] = ((msg.length-1)*8) / Math.pow(2, 32); M[N-1][14] = Math.floor(M[N-1][14])
+    M[N-1][15] = ((msg.length-1)*8) & 0xffffffff;
+
+
+    // HASH COMPUTATION [§6.1.2]
+
+    var W = new Array(64); var a, b, c, d, e, f, g, h;
+    for (var i=0; i<N; i++) {
+
+        // 1 - prepare message schedule 'W'
+        for (var t=0;  t<16; t++) W[t] = M[i][t];
+        for (var t=16; t<64; t++) W[t] = (Sha256.sigma1(W[t-2]) + W[t-7] + Sha256.sigma0(W[t-15]) + W[t-16]) & 0xffffffff;
+
+        // 2 - initialise working variables a, b, c, d, e, f, g, h with previous hash value
+        a = H[0]; b = H[1]; c = H[2]; d = H[3]; e = H[4]; f = H[5]; g = H[6]; h = H[7];
+
+        // 3 - main loop (note 'addition modulo 2^32')
+        for (var t=0; t<64; t++) {
+            var T1 = h + Sha256.Sigma1(e) + Sha256.Ch(e, f, g) + K[t] + W[t];
+            var T2 = Sha256.Sigma0(a) + Sha256.Maj(a, b, c);
+            h = g;
+            g = f;
+            f = e;
+            e = (d + T1) & 0xffffffff;
+            d = c;
+            c = b;
+            b = a;
+            a = (T1 + T2) & 0xffffffff;
+        }
+        // 4 - compute the new intermediate hash value (note 'addition modulo 2^32')
+        H[0] = (H[0]+a) & 0xffffffff;
+        H[1] = (H[1]+b) & 0xffffffff;
+        H[2] = (H[2]+c) & 0xffffffff;
+        H[3] = (H[3]+d) & 0xffffffff;
+        H[4] = (H[4]+e) & 0xffffffff;
+        H[5] = (H[5]+f) & 0xffffffff;
+        H[6] = (H[6]+g) & 0xffffffff;
+        H[7] = (H[7]+h) & 0xffffffff;
+    }
+
+    return Sha256.toHexStr(H[0]) + Sha256.toHexStr(H[1]) + Sha256.toHexStr(H[2]) + Sha256.toHexStr(H[3]) +
+        Sha256.toHexStr(H[4]) + Sha256.toHexStr(H[5]) + Sha256.toHexStr(H[6]) + Sha256.toHexStr(H[7]);
+}
+
+Sha256.ROTR = function(n, x) { return (x >>> n) | (x << (32-n)); }
+Sha256.Sigma0 = function(x) { return Sha256.ROTR(2,  x) ^ Sha256.ROTR(13, x) ^ Sha256.ROTR(22, x); }
+Sha256.Sigma1 = function(x) { return Sha256.ROTR(6,  x) ^ Sha256.ROTR(11, x) ^ Sha256.ROTR(25, x); }
+Sha256.sigma0 = function(x) { return Sha256.ROTR(7,  x) ^ Sha256.ROTR(18, x) ^ (x>>>3);  }
+Sha256.sigma1 = function(x) { return Sha256.ROTR(17, x) ^ Sha256.ROTR(19, x) ^ (x>>>10); }
+Sha256.Ch = function(x, y, z)  { return (x & y) ^ (~x & z); }
+Sha256.Maj = function(x, y, z) { return (x & y) ^ (x & z) ^ (y & z); }
+
+//
+// hexadecimal representation of a number
+//   (note toString(16) is implementation-dependant, and
+//   in IE returns signed numbers when used on full words)
+//
+Sha256.toHexStr = function(n) {
+    var s="", v;
+    for (var i=7; i>=0; i--) { v = (n>>>(i*4)) & 0xf; s += v.toString(16); }
+    return s;
+}
+
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
+/*  Utf8 class: encode / decode between multi-byte Unicode characters and UTF-8 multiple          */
+/*              single-byte character encoding (c) Chris Veness 2002-2010                         */
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
+
+var Utf8 = {};  // Utf8 namespace
+
+/**
+ * Encode multi-byte Unicode string into utf-8 multiple single-byte characters
+ * (BMP / basic multilingual plane only)
+ *
+ * Chars in range U+0080 - U+07FF are encoded in 2 chars, U+0800 - U+FFFF in 3 chars
+ *
+ * @param {String} strUni Unicode string to be encoded as UTF-8
+ * @returns {String} encoded string
+ */
+Utf8.encode = function(strUni) {
+    // use regular expressions & String.replace callback function for better efficiency
+    // than procedural approaches
+    var strUtf = strUni.replace(
+        /[\u0080-\u07ff]/g,  // U+0080 - U+07FF => 2 bytes 110yyyyy, 10zzzzzz
+        function(c) {
+            var cc = c.charCodeAt(0);
+            return String.fromCharCode(0xc0 | cc>>6, 0x80 | cc&0x3f); }
+    );
+    strUtf = strUtf.replace(
+        /[\u0800-\uffff]/g,  // U+0800 - U+FFFF => 3 bytes 1110xxxx, 10yyyyyy, 10zzzzzz
+        function(c) {
+            var cc = c.charCodeAt(0);
+            return String.fromCharCode(0xe0 | cc>>12, 0x80 | cc>>6&0x3F, 0x80 | cc&0x3f); }
+    );
+    return strUtf;
+}
+
+/**
+ * Decode utf-8 encoded string back into multi-byte Unicode characters
+ *
+ * @param {String} strUtf UTF-8 string to be decoded back to Unicode
+ * @returns {String} decoded string
+ */
+Utf8.decode = function(strUtf) {
+    // note: decode 3-byte chars first as decoded 2-byte strings could appear to be 3-byte char!
+    var strUni = strUtf.replace(
+        /[\u00e0-\u00ef][\u0080-\u00bf][\u0080-\u00bf]/g,  // 3-byte chars
+        function(c) {  // (note parentheses for precence)
+            var cc = ((c.charCodeAt(0)&0x0f)<<12) | ((c.charCodeAt(1)&0x3f)<<6) | ( c.charCodeAt(2)&0x3f);
+            return String.fromCharCode(cc); }
+    );
+    strUni = strUni.replace(
+        /[\u00c0-\u00df][\u0080-\u00bf]/g,                 // 2-byte chars
+        function(c) {  // (note parentheses for precence)
+            var cc = (c.charCodeAt(0)&0x1f)<<6 | c.charCodeAt(1)&0x3f;
+            return String.fromCharCode(cc); }
+    );
+    return strUni;
+}
+
+//Fin sha256
+// *************************************************************************************************************
+
+
+/**
+ * Phanquan's Note
+ * This is a function return the url object to replace the URL() contructor for IE browser.
+ *
+ * @param {String} options are the input url (eg: window.location.href).
+ * @returns {Object} the object which holds the information of the input url.
+ * {{protocol: string, hostname: string, host: string, port: string, hash: string, pathname: string, search: string, parameters: {}}|*}
+ */
+
+function urlObject(options) {
+    "use strict";
+    /*global window, document*/
+
+    var url_search_arr,
+        option_key,
+        i,
+        urlObj,
+        get_param,
+        key,
+        val,
+        url_query,
+        url_get_params = {},
+        a = document.createElement('a'),
+        default_options = {
+            'url': window.location.href,
+            'unescape': true,
+            'convert_num': true
+        };
+
+    if (typeof options !== "object") {
+        options = default_options;
+    } else {
+        for (option_key in default_options) {
+            if (default_options.hasOwnProperty(option_key)) {
+                if (options[option_key] === undefined) {
+                    options[option_key] = default_options[option_key];
+                }
+            }
+        }
+    }
+
+    a.href = options.url;
+    url_query = a.search.substring(1);
+    url_search_arr = url_query.split('&');
+
+    if (url_search_arr[0].length > 1) {
+        for (i = 0; i < url_search_arr.length; i += 1) {
+            get_param = url_search_arr[i].split("=");
+
+            if (options.unescape) {
+                key = decodeURI(get_param[0]);
+                val = decodeURI(get_param[1]);
+            } else {
+                key = get_param[0];
+                val = get_param[1];
+            }
+
+            if (options.convert_num) {
+                if (val.match(/^\d+$/)) {
+                    val = parseInt(val, 10);
+                } else if (val.match(/^\d+\.\d+$/)) {
+                    val = parseFloat(val);
+                }
+            }
+
+            if (url_get_params[key] === undefined) {
+                url_get_params[key] = val;
+            } else if (typeof url_get_params[key] === "string") {
+                url_get_params[key] = [url_get_params[key], val];
+            } else {
+                url_get_params[key].push(val);
+            }
+
+            get_param = [];
+        }
+    }
+
+    urlObj = {
+        protocol: a.protocol,
+        hostname: a.hostname,
+        host: a.host,
+        port: a.port,
+        hash: a.hash.substr(1),
+        pathname: a.pathname,
+        search: a.search,
+        parameters: url_get_params
+    };
+
+    return urlObj;
+}
+
+var urlObjectForIE = urlObject(window.location.href);
+// *************************************************************************************************************

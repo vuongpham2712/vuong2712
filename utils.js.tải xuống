@@ -1,0 +1,320 @@
+/**
+ * Created by bangnguyen on 12/13/2015.
+ */
+function configDatepicker(id) {
+	try {
+		var locale = $("body").attr("localization");
+		if ("france" === locale) {
+			$(id).datepicker({
+			    format: "dd/mm/yyyy",
+			    weekStart: 0,
+			    todayBtn: "linked",
+			    orientation: "auto right",
+			    language: "fr",
+			    forceParse: false,
+			    calendarWeeks: true,
+			    autoclose: true,
+			    todayHighlight: true
+			});
+		} else {
+			$(id).datepicker({
+			    format: "dd/mm/yyyy",
+			    weekStart: 0,
+			    todayBtn: "linked",
+			    orientation: "auto right",
+			    forceParse: false,
+			    calendarWeeks: true,
+			    autoclose: true,
+			    todayHighlight: true
+			});
+		}
+		} catch (err){
+			
+		}
+}
+
+var listener1 = addEventListener('blur', function() {
+
+	$(".listImageLab").hide();
+});
+function showBackDropLabPanel(e) {
+	var listFrame = $("iframe");
+	for (var i = 0; i < listFrame.length; i++) {
+		if (!$(listFrame[i]).hasClass("dynamic-content")) {
+			if (typeof ($(listFrame[i])[0].contentWindow.showAllBackdropLayout) == "function") {
+				$(listFrame[i])[0].contentWindow.showAllBackdropLayout();
+			}
+		}
+	}
+}
+function resizeWindow() {
+    var cw = $('.option-item').height();
+    $('.option-item').css({'width':cw+'px'});
+    var rootWidth =  cw*4;
+    $('.nav').css({'width':rootWidth+'px'});
+    var splitMode = $('.wrapper-split-mode').height();
+    $('.split-mode').css({'width':splitMode+'px'});
+    //var naviWidth = $('.wrapper-chart-header').width();
+    var rootWidthSplitMode = (splitMode*3) + ((splitMode*4)*20)/100;
+    $('.wrapper-split-mode').css({'width':rootWidthSplitMode+'px'});
+}
+var getUrlParameter = function getUrlParameter(sParam) {
+    var sPageURL = decodeURIComponent(window.location.search.substring(1)),
+        sURLVariables = sPageURL.split('&'),
+        sParameterName,
+        i;
+
+    for (i = 0; i < sURLVariables.length; i++) {
+        sParameterName = sURLVariables[i].split('=');
+
+        if (sParameterName[0] === sParam) {
+            return sParameterName[1] === undefined ? true : sParameterName[1];
+        }
+    }
+};
+function formatData (value) {
+
+    if (locationFlag === "fr") {
+        value = value.split(' ').join('');
+        value = value.split(',').join('.');
+    } else if (locationFlag === "en"){
+        value = value.split(' ').join('');
+        value = value.split(',').join('');
+    }
+    return value;
+}
+function formatUnitType(val) {
+    try {
+        var number = val.toString().replace(',','.');
+        if ($.isNumeric(number)) {
+            return "\u20AC";
+        }
+    }
+    catch(err) {
+    }
+	 return "";
+}
+function modalFadeTo(id) {
+	$(id).css ({'display': ''});
+	$(id).show();
+	$(id).alert();
+	$(id).fadeTo(3000, 3000).slideUp(500, function(){
+	$(id).css ({'display': 'none'});
+	}); 
+}
+function showMessError() {
+    try {
+        $('#modalAlertDeleteSingle').modal('hide');
+        modalFadeTo('#alertError');
+    } catch (e) {
+        modalFadeTo('#alertError');
+    }
+}
+function showMessSussces() {
+    $('#modalAlertDeleteSingle').modal('hide');
+	modalFadeTo('#alertSuccess');
+}
+function showMessReportSussces() {
+    $('#modalAlertReportError').modal('hide');
+   // modalFadeTo('#alertSussces');
+}
+
+function showAlertSuccess(message){
+	$alert = $("#alertSuccess");
+	$span = $("#alertSuccess span");
+	$span.text(message);
+	$alert.show();
+}
+
+function showAlertError(message){
+	$alert = $("#alertError");
+	$span = $("#alertError span");
+	$span.text(message);
+	$alert.show();
+}
+
+function displayWaning() {
+	modalFadeTo('#alertWarning');
+}
+function convertStringNumberToStringNumberFloat(value) {
+    if(!!!value){
+        return "0";
+    }else{
+        value = value.toString().replace(/-/g, '');
+        value = value.toString().replace('.', ',');
+        return value;
+    }
+}
+
+function getDisplayNumber(value){
+    if (value == null || value == undefined){
+        return "";
+    } else{
+        return Number(value);
+    }
+}
+
+function formatDate(val){
+	var formatPattern = "DD/MM/YYYY";
+	if(lang.indexOf("en") !== -1){
+		formatPattern = "MM/DD/YYYY";
+	}
+	return moment.utc(val,"DD/MM/YYYY").format(formatPattern);
+}
+
+function formatNumber(val, dimension) {
+	if(!!!val){
+        return "0";
+    }else{
+        try {
+            var flag = false;
+            var valTmp = val;
+            var indexNegative = val.toString().indexOf("-");
+            if (indexNegative = 0) {
+                flag = true;
+
+                val = val.toString().replace(/-/g, '');
+            }
+
+            var number = val.toString().replace(',', '.');
+            if ($.isNumeric(number)) {
+                if (typeof dimension === 'undefined' || typeof dimension != 'number') {
+                    dimension = 0;
+                } else {
+                    number = parseFloat(number).toFixed(dimension).toString();
+                }
+                var numberArray = number.split('.');
+                val = numberArray[0];
+                if ("en" === lang) {
+
+                    val = numberArray[0].replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+                } else if ("fr" === lang) {
+
+                    while (/(\d+)(\d{3})/.test(val.toString())) {
+                        val = numberArray[0].replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1 ");
+                    }
+                }
+                if (flag) {
+                    val = '-' + val;
+                }
+                if (dimension > 0) {
+                    var dimensionStr = '';
+                    if (numberArray.length > 1) {
+                        for (var i = numberArray[1].length; i < dimension; i++) {
+                            numberArray[1] += '0';
+                        }
+                        dimensionStr = numberArray[1];
+                    } else {
+                        for (var i = 0; i < dimension; i++) {
+                            dimensionStr += '0';
+                        }
+                    }
+                    if ("en" === lang) {
+                        number = val + '.' + dimensionStr;
+                    } else if ("fr" === lang) {
+                        number = val + ',' + dimensionStr;
+                    }
+                } else {
+                    number = val;
+                }
+            } else {
+                number = valTmp;
+            }
+            return number;
+        }
+        catch(err) {
+        }
+        return "";
+    }
+}
+function trimTextHandleNull(value){
+    try {
+        if(value!=null){
+            return value.trim();
+        }
+        else {
+            return "";
+        }
+    } catch(e) {
+        return value;
+    }
+
+}
+function isEmpty(value) {
+        if (typeof value != 'undefined' && value != null && value.toString()  && value.toString().trim().length) {
+            return false;
+        }
+        return true;
+
+
+
+}
+function isValidInt(value) {
+    var regex = /^\d+$/;
+    if( !isNaN(value) && regex.test(value) && parseInt(Number(value)) == value && !isNaN(parseInt(value, 10)))
+        return true;
+    else
+        return false;
+}
+function isValidFloat(value) {
+    var regex = /^-?\d*(\.\d+)?$/;
+    if( !isNaN(value) && regex.test(value) && parseFloat(Number(value)) == value && !isNaN(parseFloat(value)))
+        return true;
+    else
+        return false;
+}
+function isValidAnphaNumeric(value) {
+    var RE = /^([a-zA-Z0-9 _-]+)$/;
+    if(RE.test(value)){
+        return true;
+    }else{
+        return false;
+    }
+}
+function isValidDate(dateString) {
+    // First check for the pattern
+    var parts = dateString.split("/");
+    if (parts.length != 3 ) {
+        return false;
+    }
+    // Parse the date parts to integers
+    if (parts[0] == 'undefined' || parts[0] == null) {
+        return false;
+    }
+    if (parts[1] == 'undefined' || parts[1] == null) {
+        return false;
+    }
+    if (parts[2] == 'undefined' || parts[2] == null) {
+        return false;
+    }
+
+    if(!/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dateString))
+        return false;
+
+    var day = parseInt(parts[0], 10);
+    var month = parseInt(parts[1], 10);
+    var year = parseInt(parts[2], 10);
+    var currentYear =  new Date().getFullYear();
+    // Check the ranges of month and year
+    if(year < 1900 || year > currentYear || month == 0 || month > 12)
+        return false;
+
+    var monthLength = [ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 ];
+
+    // Adjust for leap years
+    if(year % 400 == 0 || (year % 100 != 0 && year % 4 == 0))
+        monthLength[1] = 29;
+
+    // Check the range of the day
+    return day > 0 && day <= monthLength[month - 1];
+}
+function trimObject(data) {
+    if (data != null) {
+        for (key in data) {
+            if (data.key != undefined && data.key != null) {
+                data.key = data.key.trim();
+            }
+        }
+    }
+    return data;
+}

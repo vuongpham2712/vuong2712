@@ -1,0 +1,426 @@
+/* latin-ext */
+body {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    overflow: auto;
+    font-family: 'Montserrat' !important;
+    }
+#wrapper {
+    min-height: 600px;
+    min-width: 1200px;
+    /* 	max-width: 1920px;
+        max-height: 1080px; */
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    padding-left: 0;
+    }
+/* #zoom-wrapper {
+	min-height: 600px;
+	min-width: 1024px;
+	height: 100%;
+	width: 100%;
+} */
+#wrapper.active-sidebar {}
+/*#sidebar-wrapper .changeColorByPartnerId{*/
+    /*background: rgb(0,95,168);*/
+/*}*/
+#sidebar-wrapper, #sideBar {
+    z-index: 1000;
+    position: absolute;
+    top: 0;
+    width: 60px;
+    height: 100%;
+    overflow: hidden;
+    border-right: 1px solid #485b70;
+    box-shadow: 3px 0px 5px #888888;
+    /*-webkit-transition: width 0.5s ease;*/
+    /*-moz-transition: width 0.5s ease;*/
+    /*-o-transition: width 0.5s ease;*/
+    transition: width 0.5s ease;
+    background: rgb(57, 130, 169);
+    }
+
+#wrapper.active-sidebar #sidebar-wrapper {
+    width: 250px;
+    }
+
+#wrapper.active-sidebar .sidebar-header {}
+
+#page-content-wrapper {
+    margin-left: 60px;
+    width: calc(100% - 60px);
+    height: 100%;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    -webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    transition: all 0.5s ease;
+    /*border-right: solid 3px white;*/
+    background-color: rgb(243,243,244);
+    }
+.nif-page-content{
+    margin-right: 0 !important;
+    border: none !important;
+}
+#wrapper.active-sidebar #page-content-wrapper {}
+
+.black-mask {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: transparent;
+    z-index: -1;
+    }
+
+#wrapper.active-sidebar .black-mask {
+    z-index: 900;
+    background: rgba(0, 0, 0, .1);
+    }
+
+
+/* Sidebar Styles */
+
+.sidebar-header {
+    background: #fff;
+    height: 60px;
+    }
+
+.sidebar-nav {
+    position: relative;
+    top: 0;
+    width: 250px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    height: 100%;
+    }
+/*.sidebar-nav.changeColorByPartnerId{*/
+	/*background-color: rgb(103,198,238);*/
+/*}*/
+.sidebar-nav li a {
+    display: block;
+    text-decoration: none;
+    color: #FFFFFF;
+    height: 60px;
+    }
+
+.sidebar-content {
+    padding-top: 0px;
+    height: 100%;
+    }
+
+.sidebar-item:nth-child(n+2) {
+    /*     margin-top: 10px; */
+}
+
+.perial{
+	background: #005F9E !important;
+}
+
+.bordeaux{
+    /*background: rgb(103,198,238);*/
+    background: #1D8293 !important;
+}
+.montpellier{
+    background: rgb(57, 130, 169) !important;
+}
+.villedemontpellier{
+    background: rgb(22,42,129) !important;
+}
+
+.villedemontpellier .sidebar-item.active-page{
+    background-color:#333333;
+}
+
+.energisme{
+    background: rgb(57, 130, 169);
+}
+
+
+.carglass{
+    background: rgb(57, 130, 169) !important;
+}
+
+.carglass .sidebar-brand img{
+    height:80%;
+}
+.cannes{
+    background: rgb(57, 130, 169) !important;
+}
+
+.mairiedeparis{
+    background: rgb(11, 81, 137) !important;
+}
+
+.mairiedeparis .sidebar-item.active-page{
+    background-color: rgb(223, 34, 90);
+}
+
+
+.sidebar-item:hover {
+/*     background: rgba(255, 255, 255, 0.5); */
+	background: rgb(127, 174, 208);
+    }
+.menu-cartography-page {
+    margin-top: 6.8% !important;
+    }
+.sidebar-item {
+    border: none;
+    margin-bottom: 5%;
+    margin-top: 5%;
+    }
+
+#logoutBtn{
+    bottom: 0;
+    position: absolute;
+    width: 100%;
+    margin: 0;
+}
+
+.menu-cartography-page.active-page {
+    background: #fc8b6c;
+    }
+
+.menu-benchmark-page.active-page {
+    background: #00d2a0;
+    }
+
+.menu-installation-page.active-page {
+    background: #38b9ff;
+    }
+
+.menu-profile-page.active-page {
+    background: #fbc75f;
+    }
+.perial-Mes-affaire.active-page {
+    background: #fbc75f;
+}
+
+.menu-setting-page.active-page {
+    background: #002c3f;
+    }
+.bordeaux .sidebar-item.active-page{
+    background-color:#0F4C58;
+}
+
+.montpellier .sidebar-item.active-page{
+    background-color:#333333;
+}
+
+.sidebar-item.active-page {
+    font-weight: bold;
+    background-color: #064060;
+}
+
+.sidebar-nav li a:active,
+.sidebar-nav li a:focus {
+    text-decoration: none;
+    }
+
+.menu-title-content {
+    word-break: break-all;
+    /*vertical-align: middle;*/
+    width: calc(100% - 70px);
+    display: inline-block;
+    }
+
+.menu-title-content span {
+    padding-left: 10px;
+    word-break: break-all;
+    font-size: 14px !important;
+    }
+
+.menu-ico-content {
+    width: 60px;
+    height: 100%;
+    display: inline-block;
+    position: relative;
+    vertical-align: middle;
+    }
+
+.menu-ico-content>img {
+    height: 35px;
+    width: 35px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    }
+
+.circle-detail {
+    position: absolute;
+    border-radius: 50%;
+    width: 15px;
+    height: 15px;
+    right: 12px;
+    background: #fc5538;
+    font-size: 10px;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 15px;
+    }
+
+.sidebar-brand {
+    display: inline-block;
+    width: calc(100% - 66px);
+    height: 100%;
+    position: relative;
+    }
+
+.sidebar-brand img {
+    height: 100%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    /*width: 70%;*/
+    }
+
+.sidebar-toggle {
+    width: 60px;
+    display: inline-block;
+    position: relative;
+    height: 100%;
+    border-right: 2px solid rgb(240,240,240);
+    float:left;
+    }
+
+.sidebar-hamburger {
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    cursor: pointer;
+    transition-duration: 0.5s;
+    }
+
+.sidebar-hamburger .icon {
+    transition-duration: 0.5s;
+    position: absolute;
+    height: 3px;
+    width: 100%;
+    top: 8.5px;
+    background: #485b70;
+    }
+
+.sidebar-hamburger .icon:before {
+    transition-duration: 0.5s;
+    position: absolute;
+    width: 100%;
+    height: 3px;
+    background: #485b70;
+    content: "";
+    top: -6px;
+    }
+
+.sidebar-hamburger .icon:after {
+    transition-duration: 0.5s;
+    position: absolute;
+    width: 100%;
+    height: 3px;
+    background: #485b70;
+    content: "";
+    top: 6px;
+    }
+
+#wrapper.active-sidebar .sidebar-hamburger .icon {
+    transition: 0.5s;
+    background-color: transparent;
+    }
+
+#wrapper.active-sidebar .sidebar-hamburger .icon:before,
+.div_leftPanel_header_left .sidebar-hamburger .icon:before {
+    transform: rotateZ(-45deg) scaleX(0.75) translate(0px, 2px);
+    }
+
+#wrapper.active-sidebar .sidebar-hamburger .icon:after,
+.div_leftPanel_header_left.active-sidebar .sidebar-hamburger .icon:after {
+    transform: rotateZ(45deg) scaleX(0.75) translate(0px, -2px);
+    }
+
+.sidebar-toggle img:hover {
+    cursor: pointer;
+    }
+
+.sidebar-toggle img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    width: 20px;
+    }
+
+#wrapper.active-sidebar .menu-title-content {
+    display: inline-block;
+    }
+
+/* @media(min-width:768px) {
+    #wrapper.active-sidebar {
+        padding-left: 0;
+    }
+    #sidebar-wrapper {}
+    #wrapper.active-sidebar #sidebar-wrapper {}
+    #page-content-wrapper {}
+    #wrapper.active-sidebar #page-content-wrapper {
+        margin-left: 250px;
+    }
+} */
+
+/* @media (max-width:736px) {
+    #sidebar-wrapper {
+        margin-left: -250px;
+    }
+    #page-content-wrapper {
+        width: 100%;
+        margin: 0;
+    }
+} */
+
+.divIconSideBar {
+    height: 100%;
+    font-size: 33px;
+    }
+
+.transformMiddle{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    }
+.mask-sitebar.active {
+    width: 60px;
+    height: 100%;
+    background: rgba(0,0,0,0.2);
+    float: left;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1001;
+    cursor: pointer;
+}
+.dynamicImg {
+    height: 33px;
+    width: 33px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+}
+.bodyLoading {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    background: rgba(219, 219, 219, 1);
+    left: 0;
+    top: 0;
+    display: block;
+}

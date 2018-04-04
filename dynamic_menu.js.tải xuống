@@ -1,0 +1,49 @@
+myApp.controller('dynamicMenu', ['$scope', '$sce', '$http', '$timeout', function ($scope, $sce, $http, $timeout) {
+    $scope.showPopupMain001 = function () {
+        angular.element('#modal-main001').appendTo("body").modal({
+            keyboard: false,
+            backdrop: 'static',
+            show: true
+        });
+    };
+    $scope.hidePopupMain001 = function () {
+        $('#closePopupMane').click();
+    };
+    // initTooltipster('#validateMainPopup', LABEL_LS_TOOLTIP_SUBMIT02);
+    // initTooltipster('#cancelMainPopup', LABEL_LS_TOOLTIP_CANCEL);changes
+}]);
+
+function initTooltipster(origin, content) {
+    $(origin).tooltipster({
+        position: 'top',
+        theme: ['tooltipster-borderless', 'tooltipster-borderless-customized'],
+        contentAsHTML: true,
+        content: '<div>' + content + '</div>',
+        animation: 'fade',
+        delay: 100,
+        repositionOnScroll: true
+        // functionPosition: function (instance, helper, position) {
+        //     var ieVer = getIEVersion();
+        //     console.log(ieVer);
+        //     console.log(position.coord.top + ' - ' + position.coord.left);
+        //     if (ieVer == 9 || ieVer == 10) {
+        //         position.coord.top = (document.body.scrollTop + helper.geo.origin.offset.top) - (position.size.height + position.distance);
+        //         position.coord.left = (document.body.scrollLeft + helper.geo.origin.offset.left) + (helper.geo.origin.size.width / 2) - (position.size.width / 2);
+        //         position.target = Math.round(position.coord.left + (position.size.width / 2));
+        //         if (helper.geo.origin.offset.top < (position.size.height + position.distance))
+        //             position.coord.top = document.body.scrollTop + helper.geo.origin.offset.top + helper.geo.origin.size.height + position.distance;
+        //         console.log(position.coord.top + ' - ' + position.coord.left);
+        //         return position;
+        //     }
+        // }
+    });
+}
+
+$( document ).ready(function() {
+    $(".sidebar-item").mouseenter(function(){
+        $(this).addClass('hoverColor');
+    });
+    $(".sidebar-item").mouseleave(function(){
+        $(this).removeClass('hoverColor');
+    });
+})

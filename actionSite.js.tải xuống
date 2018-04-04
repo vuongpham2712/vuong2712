@@ -1,0 +1,457 @@
+var pageSetting = 'setting';
+
+// done
+var checkPageCartographie = '';
+var checkPageMonParc = '';
+var checkPagePerformanceSite = '';
+var checkPageSetting = '';
+var checkPageimportFacture = '';
+
+var cartographiePage = $('.sidebar-item.menu-cartography-page');
+var performanceSitePAge = $('.sidebar-item.menu-benchmark-page.performance-site');
+var monParcPage = $('.sidebar-item.menu-benchmark-page.mon-parc');
+var importFacturePage = $('.sidebar-item.menu-profile-page');
+var settingPage = $('.sidebar-item.menu-setting-page');
+
+var firstPage = $(".firstPage.user-action");
+var secondPage = $(".secondPage.user-action");
+var thirdPage = $(".thirdPage.user-action");
+
+
+var firstPageSetting = $(".firstPage.user-action-iframe");
+var secondPageSetting = $(".secondPage.user-action-iframe");
+var thirdPageSetting = $(".thirdPage.user-action-iframe");
+
+// console.log(pageAction);
+
+function getPageActionCurrent() {
+    var url = window.location.href;
+    var arr = url.split('/');
+    var str = arr[arr.length - 1];
+    var arr2 = str.split('.');
+    return arr2[0];
+}
+
+//done
+function checkOnly(dataDetail) {
+    if (dataDetail) {
+        switch (pageAction) {
+
+            ///check cartographie
+            case 'cartographie':
+                var dataMesSites = dataDetail.cartographie;
+                if (!dataMesSites[0].is_access) {
+                    checkPageCartographie = dataMesSites[0].is_access;
+                    pageAction = getPageActionCurrent();
+
+                    showContentDialog();
+                }
+                break;
+
+            /// check mon parc ///////////
+            case 'performanceParc':
+
+                var dataMonParc = dataDetail.monparc;
+                if (!dataMonParc[0].is_access && !dataMonParc[1].is_access) {
+                    checkPageMonParc = dataMonParc[0].is_access;
+                    pageAction = getPageActionCurrent();
+                    showContentDialog();
+                } else if (!dataMonParc[0].is_access && dataMonParc[1].is_access) {
+                    pageAction = 'visionGlobale';
+                    changeTabJS(pageAction);
+                }
+                break;
+
+            ///////mes sites///////
+            case 'performanceSite':
+
+                var dataMesSites = dataDetail.monsite;
+                if (!dataMesSites[1].is_access && dataMesSites[2].is_access) {
+                    pageAction = 'facturationSite';
+                    changeTabJS(pageAction);
+                } else if (!dataMesSites[1].is_access) {
+                    checkPagePerformanceSite = dataMesSites[1].is_access;
+                    pageAction = getPageActionCurrent();
+                    showContentDialog();
+                }
+                break;
+
+            //check factures
+            case 'importFacture':
+
+                var dataFacture = dataDetail.facture;
+                if (!dataFacture[0].is_access && dataFacture[1].is_access) {
+                    pageAction = 'mesFacturePage';
+                    changeTabJS(pageAction);
+                } else if (!dataFacture[0].is_access && !dataFacture[1].is_access) {
+                    checkPageimportFacture = dataFacture[0].is_access;
+                    pageAction = getPageActionCurrent();
+                    showContentDialog();
+                }
+                break;
+            case 'setting':
+                var dataSetting = dataDetail.params;
+                if (!dataSetting[0].is_access && !dataSetting[1].is_access && !dataSetting[2].is_access) {
+                    checkPageSetting = false;
+                    pageAction = getPageActionCurrent();
+                    showContentDialog();
+                }
+                break;
+        }
+    }
+}
+
+function checkDisiblePage(pageDisible){
+	pageDisible.addClass('disable');
+	pageDisible.css('opacity', 0.5);
+	pageDisible.attr('onclick', 'javascript:void(0);');
+}
+
+function disiblePage(dataDetail) {
+        switch (pageAction) {
+
+            //done
+            case 'performancePatri':
+
+                var dataMonParc = dataDetail.monparc;
+                if (!dataMonParc[2].is_access) {
+                    checkDisiblePage(thirdPage);
+
+                }
+                break;
+        
+        	//done
+            case 'performanceParc':
+
+                var dataMonParc = dataDetail.monparc;
+                if (!dataMonParc[1].is_access) {
+                	checkDisiblePage(secondPage);
+
+                }
+                break;
+                
+              //done
+            case 'visionGlobale':
+                var dataMonParc = dataDetail.monparc;
+                if (!dataMonParc[0].is_access) {
+                	checkDisiblePage(firstPage);
+
+                }
+                break;
+
+                //done
+            case 'performanceSite':
+                var dataMesSites = dataDetail.monsite;
+                if (!dataMesSites[2].is_access && !dataMesSites[0].is_access) {
+                	checkDisiblePage(thirdPage);
+                	checkDisiblePage(firstPage);
+                	
+                }else if(!dataMesSites[0].is_access){
+                	checkDisiblePage(firstPage);
+                }else if(!dataMesSites[2].is_access){
+                	checkDisiblePage(thirdPage);
+
+                }
+                break;
+
+            case 'facturationSite':
+            	 var dataMesSites = dataDetail.monsite;
+                 if (!dataMesSites[1].is_access && !dataMesSites[0].is_access) {
+                	 
+                 	checkDisiblePage(firstPage);
+                 	checkDisiblePage(secondPage);
+                 	
+                 }else if(!dataMesSites[0].is_access){
+                	 
+                 	checkDisiblePage(firstPage);
+                 	
+                 }else if(!dataMesSites[1].is_access){
+                 	checkDisiblePage(secondPage);
+
+                 }
+                 break;
+            	
+             
+
+            case 'synoptique':
+            	
+            	var dataMesSites = dataDetail.monsite;
+                if (!dataMesSites[1].is_access && !dataMesSites[2].is_access) {
+               	 
+                	checkDisiblePage(thirdPage);
+                	checkDisiblePage(secondPage);
+                	
+                }else if(!dataMesSites[1].is_access){
+               	 
+                	checkDisiblePage(secondPage);
+                	
+                }else if(!dataMesSites[2].is_access){
+                	checkDisiblePage(thirdPage);
+
+                }
+                break;
+                
+            case 'importFacture':
+
+                var dataFacture = dataDetail.facture;
+                if (!dataFacture[1].is_access && !dataFacture[2].is_access) {
+                	checkDisiblePage(thirdPage);
+                	checkDisiblePage(secondPage);
+                }else if(!dataFacture[1].is_access){
+                	checkDisiblePage(secondPage);
+                }else if(!dataFacture[2].is_access){
+                	checkDisiblePage(thirdPage);
+                }
+                break;
+            case 'mesFacturePage':
+                var dataFacture = dataDetail.facture;
+                if (!dataFacture[0].is_access && !dataFacture[2].is_access) {
+                	checkDisiblePage(thirdPage);
+                	checkDisiblePage(firstPage);
+                }else if(!dataFacture[0].is_access){
+                	checkDisiblePage(firstPage);
+                }else if(!dataFacture[2].is_access){
+                	checkDisiblePage(thirdPage);
+                }
+
+                break;
+
+            case 'invariantPage':
+            	 var dataFacture = dataDetail.facture;
+                 if (!dataFacture[0].is_access && !dataFacture[1].is_access) {
+                 	checkDisiblePage(secondPage);
+                 	checkDisiblePage(firstPage);
+                 }else if(!dataFacture[0].is_access){
+                 	checkDisiblePage(firstPage);
+                 }else if(!dataFacture[1].is_access){
+                 	checkDisiblePage(secondPage);
+                 }
+
+            	break;
+            case 'parametersSetting':
+                var dataParams = dataDetail.params;
+                if (!dataParams[2].is_access && !dataParams[1].is_access && !dataParams[0].is_access) {
+                	 showContentDialog();
+                }else if (!dataParams[2].is_access && !dataParams[1].is_access) {
+                	checkDisiblePage(thirdPageSetting);
+                	checkDisiblePage(secondPageSetting);
+                }else if(!dataParams[2].is_access){
+                	checkDisiblePage(thirdPageSetting);
+                }else if(!dataParams[1].is_access){
+                	checkDisiblePage(secondPageSetting);
+                }
+                break;
+        }
+
+}
+
+
+function checkAllDataForget(dataDetail){
+	var dataCartographie = dataDetail.cartographie;
+    var dataMonParc = dataDetail.monparc;
+    var dataMesSites = dataDetail.monsite;
+    var dataFactures = dataDetail.facture;
+    switch (pageAction) {
+
+	//done
+    case 'performanceParc':
+        var dataMonParc = dataDetail.monparc;
+        if (!dataMonParc[0].is_access && !dataMonParc[1].is_access ) {
+            changeTabJS('performanceSite');
+        	changeTabJS('visionGlobale');
+        }else if(!dataMonParc[0].is_access){
+            changeTabJS('visionGlobale');
+        }
+        break;
+        
+      //done
+    case 'visionGlobale':
+        var dataMonParc = dataDetail.monparc;
+        if (dataMonParc[0].is_access && !dataMonParc[1].is_access) {
+        	changeTabJS('performanceParc');
+        }else  if (!dataMonParc[0].is_access && !dataMonParc[1].is_access){
+        	changeTabJS('performanceSite');
+        }
+        break;
+    //done
+    case 'performancePatri':
+        var dataMonParc = dataDetail.monparc;
+        if (dataMonParc[2].is_access && !dataMonParc[1].is_access && !dataMonParc[0].is_access) {
+            changeTabJS('performancePatri');
+        }else  if (!dataMonParc[2].is_access && !dataMonParc[1].is_access && !dataMonParc[0].is_access){
+            changeTabJS('performanceSite');
+        }
+        break;
+
+        //done
+    case 'performanceSite':
+        var dataMesSites = dataDetail.monsite;
+        if(!dataMesSites[1].is_access && !dataMesSites[2].is_access && !dataMesSites[1].is_access){
+        	changeTabJS('newImportFacture');
+        }
+
+        if(dataMesSites[2].is_access && !dataMesSites[1].is_access){
+        	changeTabJS('facturationSite');
+        }else if(!dataMesSites[2].is_access && !dataMesSites[1].is_access){
+        	changeTabJS('synoptique');
+        }
+        break;
+
+    case 'facturationSite':
+    	 var dataMesSites = dataDetail.monsite;
+    	 if(!dataMesSites[1].is_access && !dataMesSites[2].is_access && !dataMesSites[1].is_access){
+         	changeTabJS('newImportFacture');
+         }
+    	 
+    	 if (dataMesSites[1].is_access && !dataMesSites[2].is_access) {
+         	changeTabJS('performanceSite');
+         }else if (!dataMesSites[1].is_access && !dataMesSites[2].is_access){
+         	changeTabJS('synoptique');
+         }
+         break;
+
+    case 'synoptique':
+    	
+    	var dataMesSites = dataDetail.monsite;
+    	 if(!dataMesSites[1].is_access && !dataMesSites[2].is_access && !dataMesSites[1].is_access){
+          	changeTabJS('newImportFacture');
+          }
+    	 
+    	 if (dataMesSites[1].is_access && !dataMesSites[0].is_access ) {
+          		changeTabJS('performanceSite');
+          }else if (!dataMesSites[1].is_access && !dataMesSites[0].is_access ){
+          	changeTabJS('facturationSite');
+          }
+        break;
+        
+        
+        //inprogress
+    case 'importFacture':
+
+        var dataFacture = dataDetail.facture;
+        if (!dataFacture[0].is_access && !dataFacture[1].is_access && !dataFacture[2].is_access) {
+        	changeTabJS('parametersSetting');
+        }
+        
+        if(dataFacture[1].is_access && !dataFacture[0].is_access){
+        	changeTabJS('mesFacturePage');
+        }else if(dataFacture[1].is_access && !dataFacture[0].is_access){
+        	changeTabJS('invariantPage');
+        }
+        break;
+    case 'mesFacturePage':
+        var dataFacture = dataDetail.facture;
+        if (!dataFacture[0].is_access && !dataFacture[1].is_access && !dataFacture[2].is_access) {
+        	changeTabJS('parametersSetting');
+        }
+        
+        if(!dataFacture[1].is_access && dataFacture[0].is_access){
+        	changeTabJS('newImportFacture');
+        }else if(!dataFacture[1].is_access && !dataFacture[0].is_access){
+        	changeTabJS('invariantPage');
+        }
+        break;
+
+    case 'invariantPage':
+    	 var dataFacture = dataDetail.facture;
+    	 if (!dataFacture[0].is_access && !dataFacture[1].is_access && !dataFacture[2].is_access) {
+         	changeTabJS('parametersSetting');
+         }
+    	 
+    	 if(dataFacture[0].is_access && !dataFacture[2].is_access){
+         	changeTabJS('newImportFacture');
+         }else if(!dataFacture[0].is_access && !dataFacture[2].is_access){
+         	changeTabJS('mesFacturePage');
+         }
+
+    	break;
+    case 'parametersSetting':
+        var dataParams = dataDetail.params;
+        if (!dataParams[2].is_access && !dataParams[1].is_access && !dataParams[0].is_access) {
+        	 showContentDialog();
+        }
+        break;
+}
+    
+}
+
+//done
+function checkAll(dataDetail) {
+    if (dataDetail) {
+        var dataCartographie = dataDetail.cartographie;
+        var dataMonParc = dataDetail.monparc;
+        var dataMesSites = dataDetail.monsite;
+        var dataFactures = dataDetail.facture;
+// 	 var dataPantrimoine = dataDetail.pantrimoine;
+
+        if (pageAction == 'cartographie') {
+            if (dataCartographie[0].is_access) {
+                return;
+            } else if ( !dataCartographie[0].is_access &&
+                dataMonParc[0].is_access) {
+                changeTabJS('performanceParc');
+
+            } else if (dataMonParc[1].is_access) {
+
+                changeTabJS('visionGlobale');
+
+            } else if ( pageAction == 'visionGlobale' && dataMesSites[1].is_access) {
+
+                changeTabJS('performanceSite');
+
+
+            } else if (dataMonParc[2].is_access) {
+
+                changeTabJS('performancePatri');
+
+            } else if ( pageAction == 'performancePatri' && dataMesSites[2].is_access) {
+
+                changeTabJS('performancePatri');
+
+
+            } else if (dataMesSites[2].is_access) {
+
+                changeTabJS('facturationSite');
+
+            }else if(dataMesSites[0].is_access){
+            	
+            	 changeTabJS('synoptique');
+            	 
+            }else if (dataFactures[0].is_access) {
+
+                changeTabJS('newImportFacture');
+
+            } else if (dataFactures[1].is_access) {
+            	
+                changeTabJS('mesFacturePage');
+                
+            }else if(dataFactures[2].is_access){
+            	
+            	changeTabJS('invariantPage');
+            	
+            } else {
+                changeTabJS(pageSetting);
+            }
+        }
+    }
+}
+
+$(document).ready(function () {
+    $(".secondPage.user-action.disable").on('click',function(){
+        showContentDialog();
+    });
+    $(".firstPage.user-action.disable").on('click',function(){
+        showContentDialog();
+    });
+    $(".thirdPage.user-action.disable").on('click',function(){
+        showContentDialog();
+    });
+    bindTextLongAnimation('.mesSite-back', '.mesSite-back-main');
+});
+
+function showContentDialog() {
+    $('#myModalBlock').addClass('show-dialog-confirm').removeClass('modal fade');
+}
+function closeDialog() {
+    $('#myModalBlock').addClass('modal in').removeClass('show-dialog-confirm');
+}

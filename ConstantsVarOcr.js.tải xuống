@@ -1,0 +1,40 @@
+/**
+ * Created by vtlan on 3/21/2017.
+ */
+var ELEC = 'ELEC';
+var EAU = 'EAU';
+var WATER = 'WATER';
+var GAZ = 'GAZ';
+var GAS = 'GAS';
+var RESEAU_DE_CHALEUR = 'RESEAU DE CHALEUR';
+var HEAT = 'HEAT';
+var AUTRE = 'AUTRE';
+var ORG = 'Org';
+var EDIT = 'Edit';
+var ID_STR = "Id";
+var dateFormatFactureDetail = 'DD/MM/YYYY';
+var CLASS_TEXT_NON_SITE  = 'text_non_site';
+var CLASS_DISABLE_DIV_TAG = 'diabledDivTag';
+var TYPE_OF_UNDEFINED = 'undefined';
+var STRING = 'string';
+var FLOAT = 'float';
+var INT = 'int';
+var FOD = 'FOD';
+var FOL = 'FOL';
+var STEAM = 'STEAM';
+var WOOD = 'WOOD';
+var LPG = 'LPG';
+var COAL = 'COAL';
+var COLD = 'COLD';
+var PROPANE = 'PROPANE';
+var OTHER_ENERGY = 'OTHER_ENERGY';
+
+
+function showHideNagative($this) {
+    var nagative = $('#wrapper');
+    if(nagative.hasClass('active-sidebar')){
+        nagative.removeClass('active-sidebar');
+    }else{
+        nagative.addClass('active-sidebar');
+    }
+}

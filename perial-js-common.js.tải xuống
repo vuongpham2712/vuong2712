@@ -1,0 +1,257 @@
+var activeFluide = 'active-fluide';
+var dateFormat = "DD/MM/YYYY";
+if(lang.indexOf("en") !== -1) dateFormat = "MM/DD/YYYY";
+$(function() {
+	
+	//hide alert boostrap
+	$("[data-hide]").on("click", function(){
+        $(this).closest("." + $(this).attr("data-hide")).hide();
+    });
+	
+	
+	$(".search-input input").bind("keyup change focus", function (e) {
+        if (e.which === 13) {
+			try {
+				if ('facturationSite' === pageAction){
+					searchSiteFacturationSitePage();
+				} else {
+					var parameter = $(this).val();
+					search(parameter);
+				}
+
+			} catch (e){}
+
+        }
+    });
+    $(".btn.btn-default.btn-search").click(function (e) {
+        var parameter = $(".search-input input").val();
+        search(parameter);
+    });
+
+    $(".btn.btn-default.btn-close").click(function () {
+    	var $searchWrapper = $(".search-wrapper");
+    	$searchWrapper.removeClass("active-search");
+    	
+    	 if ('cartographie' === pageAction){
+    		 window.location.href = 'cartographie';
+    	 }else{
+    		 window.location.href = 'performanceSite';
+    	 }
+    })
+    
+})
+
+function changeStateOfFourniss(fluide) {
+	var fluides = [ "gaz", "temp", "eau", "elec" ];
+	var show = 'display: block ';
+	var hide = 'display: none ';
+	for (var i = 0; i < fluides.length; i++) {
+		if (fluides[i] === fluide) {
+			jQuery('[name=\"' + fluide + '\"]').attr('style ', show);
+		} else {
+			var element = jQuery('[name=\"' + fluides[i] + '\"]');
+			if (element.style == undefined) {
+				element.attr('style', hide);
+			} else {
+				element.attr('style', hide);
+			}
+		}
+	}
+}
+function getBaseUrl() {
+	var arrSplit = window.location.pathname.split("/");
+	var url = window.location.protocol + "//" + window.location.host + '/PerialWeb';
+	if (arrSplit.length > 1) {
+		url = window.location.protocol + "//" + window.location.host + '/' + arrSplit[1];
+	}
+	return url;
+}
+
+function getParameterByName(name, url) {
+    if (!url) url = window.location.href;
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
+
+function validFile(files, validFormats){
+	var ext = files.substring(files.lastIndexOf('.') + 1).toLowerCase();
+	
+	return validFormats.indexOf(ext) !== -1;
+}
+
+function checkValidSession(headers){
+	if(typeof headers === "object"){
+		var sign_auth = headers["sign_auth"];
+		if(typeof sign_auth === "string" && sign_auth === "1"){
+			location.reload();
+            throw new Error("Session expired. Need to login");
+		}
+    }
+}
+
+function checkValidSessionForAjax(sign_auth){
+    if(typeof sign_auth === "string" && sign_auth === "1"){
+        location.reload();
+        throw new Error("Session expired. Need to login");
+    }
+}
+
+function decodeHTML(data){
+    var ret = null;
+	if(data){
+		if(typeof data === "string"){
+			ret = $($("#encodeHTML").html(data)).text();
+		}else if(Array.isArray(data)){
+			ret = [];
+			$.each(data, function (i, d) {
+                var item = $($("#encodeHTML").html(d)).text();
+                ret.push(item);
+            })
+		}
+	}else{
+		ret = "";
+	}
+	return ret;
+}
+
+var resultModal = resultModal || (function ($){
+	'use strict';
+	
+	var $dialog = null;
+	
+	return {
+		show: function (message, options) {
+			// Assigning defaults
+			if (typeof options === 'undefined') {
+				options = {};
+			}
+			if (typeof message === 'undefined') {
+				message = '';
+			}
+			
+			var settings = $.extend({
+				dialogSize: 'm',
+				typeModal: '',
+				fileFailure: null
+			}, options);
+			
+			switch (settings.typeModal) {
+				case "info":
+					$dialog = $('<div id="modal-warning" class="modal modal-message modal-danger fade" style="display: none;" aria-hidden="true"> <div class="modal-dialog"> <div class="modal-content"> <div class="modal-header text-center text-info"> <i class="fa fa-warning"></i> </div> <div class="modal-body"><span></span></div> <div class="modal-footer text-center"> <button type="button" class="btn btn-info " data-dismiss="modal">OK</button> </div> </div> <!-- / .modal-content --> </div> <!-- / .modal-dialog --> </div>');
+					break;
+				case "warning": case "error":
+					$dialog = $('<div id="modal-warning" class="modal modal-message modal-danger fade" style="display: none;" aria-hidden="true"> <div class="modal-dialog"> <div class="modal-content"> <div class="modal-header text-center text-danger"> <i class="fa fa-warning"></i> </div> <div class="modal-body"><span></span></div> <div class="modal-footer text-center"> <button type="button" class="btn btn-danger " data-dismiss="modal">OK</button> </div> </div> <!-- / .modal-content --> </div> <!-- / .modal-dialog --> </div>');
+					break;
+			default:
+				// Creating modal dialog's DOM
+				//default success
+				$dialog = $('<div id="modal-success" class="modal modal-message modal-success fade" style="display: none;" aria-hidden="true"> <div class="modal-dialog"> <div class="modal-content"> <div class="modal-header text-center"> <i class="glyphicon glyphicon-ok"></i> </div> <div class="modal-body"><span></span></div> <div class="modal-footer text-center"> <button type="button" class="btn btn-success" data-dismiss="modal">OK</button> </div> </div> <!-- / .modal-content --> </div> <!-- / .modal-dialog --> </div>');
+				break;
+			}
+			// Configuring dialog
+			$dialog.find('.modal-dialog').attr('class', 'modal-dialog').addClass('modal-' + settings.dialogSize);
+			
+			$dialog.find('.modal-body span').html(message);
+			
+			if(settings.fileFailure != null && Array.isArray(settings.fileFailure) && settings.fileFailure.length > 0){
+				var list = "<ul>";
+				for (var i = 0; i < settings.fileFailure.length; i++) {
+					var name = settings.fileFailure[i];
+					list += "<li class='text-left'>"+name+"</li>";
+				}
+				list+= "</ul>";
+				
+				$dialog.find('.modal-body').append(list);
+			}else{
+				$dialog.find('.modal-body ul').remove();
+			}
+			
+			// Adding callbacks
+			if (typeof settings.onHide === 'function') {
+				$dialog.off('hidden.bs.modal').on('hidden.bs.modal', function (e) {
+					settings.onHide.call($dialog);
+				});
+			}
+			// Opening dialog
+			$dialog.modal();
+		},
+		/**
+		 * Closes dialog
+		 */
+		hide: function () {
+			$dialog.modal('hide');
+		}
+	};
+})(jQuery);
+
+/**
+ * Module for displaying "Waiting for..." dialog using Bootstrap
+ *
+ * @author Eugene Maslovich <ehpc@em42.ru>
+ */
+
+var waitingDialog = waitingDialog || (function ($) {
+    'use strict';
+
+	// Creating modal dialog's DOM
+	var $dialog = $(
+		'<div class="modal fade" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-hidden="true" style="overflow-y:visible;">' +
+		'<div class="modal-dialog modal-m">' +
+		'<div class="modal-content">' +
+			'<div class="modal-header"><h3 style="margin:0;"></h3></div>' +
+			'<div class="modal-body">' +
+				'<div class="progress progress-striped active" style="margin-bottom:0;"><div class="progress-bar" style="width: 100%"></div></div>' +
+			'</div>' +
+		'</div></div></div>');
+
+	return {
+		/**
+		 * Opens our dialog
+		 * @param message Custom message
+		 * @param options Custom options:
+		 * 				  options.dialogSize - bootstrap postfix for dialog size, e.g. "sm", "m";
+		 * 				  options.progressType - bootstrap postfix for progress bar type, e.g. "success", "warning".
+		 */
+		show: function (message, options) {
+			// Assigning defaults
+			if (typeof options === 'undefined') {
+				options = {};
+			}
+			if (typeof message === 'undefined') {
+				message = lbl_lacataire_waitamoment;
+			}
+			var settings = $.extend({
+				dialogSize: 'm',
+				progressType: '',
+				onHide: null // This callback runs after the dialog was hidden
+			}, options);
+
+			// Configuring dialog
+			$dialog.find('.modal-dialog').attr('class', 'modal-dialog').addClass('modal-' + settings.dialogSize);
+			$dialog.find('.progress-bar').attr('class', 'progress-bar');
+			if (settings.progressType) {
+				$dialog.find('.progress-bar').addClass('progress-bar-' + settings.progressType);
+			}
+			$dialog.find('h3').html(message);
+			// Adding callbacks
+			if (typeof settings.onHide === 'function') {
+				$dialog.off('hidden.bs.modal').on('hidden.bs.modal', function (e) {
+					settings.onHide.call($dialog);
+				});
+			}
+			// Opening dialog
+			$dialog.modal();
+		},
+		/**
+		 * Closes dialog
+		 */
+		hide: function () {
+			$dialog.modal('hide');
+		}
+	};
+
+})(jQuery);

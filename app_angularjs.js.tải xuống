@@ -1,0 +1,4 @@
+/**
+ * Created by ddtung on 26/04/2017
+ */
+var myApp = angular.module("Perial", ['ui.bootstrap','ngSanitize', 'angular-bootstrap-select', 'daterangepicker', 'ngMaterial', 'cleave.js', 'mentio','ngMessages', 'angularUtils.directives.dirPagination','tw.directives.clickOutside']);
